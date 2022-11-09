@@ -21,11 +21,11 @@ class module :
         self.device = torch.device( device_name )
 
         self.model = {}
-        self.model['net'] = model.Net( layers, latent_size ).to(self.device)
+        self.model['network'] = model.Net( layers, latent_size ).to(self.device)
         self.model['loss'] = model.Loss().to(self.device)
         
     def train( self, num_epoch=10 ):
-        optimizer = optim.Adam(self.model['net'].parameters())
+        optimizer = optim.Adam(self.model['network'].parameters())
 
         for epoch in range(num_epoch):
             train_loss = 0
@@ -33,7 +33,7 @@ class module :
                 data = data.view(-1, 784).to(self.device)
                 optimizer.zero_grad()
         
-                mu, log_var, recon = self.model['net'](data)
+                mu, log_var, recon = self.model['network'](data)
                 loss = self.model['loss'](data, mu, log_var, recon)
         
                 loss.backward()
