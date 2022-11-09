@@ -3,6 +3,7 @@ import init
 import torch
 from torchvision import datasets, transforms
 import torch.optim as optim
+from tqdm import tqdm
 
 import model
 
@@ -28,7 +29,7 @@ class module :
 
         for epoch in range(num_epoch):
             train_loss = 0
-            for batch_idx, (data, _) in enumerate(self.data_loader):
+            for batch_idx, (data, _) in tqdm(enumerate(self.data_loader)):
                 data = data.view(-1, 784).to(self.device)
                 optimizer.zero_grad()
         
@@ -39,15 +40,10 @@ class module :
                 train_loss += loss.item()
                 optimizer.step()
         
-                if batch_idx % 100 == 0:
-                    print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                        epoch, batch_idx * len(data), len(self.data_loader.dataset),
-                        100. * batch_idx / len(self.data_loader), loss.item() / len(data)))
             print('====> Epoch: {} Average loss: {:.4f}'.format(epoch, train_loss / len(self.data_loader.dataset)))
 
 
 if __name__=="__main__" :
     m = module()
     m.build_model()
-
     m.train(100)
