@@ -42,6 +42,13 @@ class module :
         
             print('====> Epoch: {} Average loss: {:.4f}'.format(epoch, train_loss / len(self.data_loader.dataset)))
 
+        try :
+            state_dict = self.model['network'].module.state_dict()
+        except AttributeError:
+            state_dict = self.model['network'].state_dict()
+
+        torch.save({'state_dict':state_dict}, 'model.pt')
+
 
 if __name__=="__main__" :
     m = module()
