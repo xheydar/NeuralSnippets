@@ -1,6 +1,7 @@
 import init
 
 import sys
+import numpy as np
 
 import torch
 from torchvision import transforms
