@@ -109,8 +109,12 @@ class module :
 #            state_dict = self.model['network'].module.state_dict()
 #        except AttributeError:
 #            state_dict = self.model['network'].state_dict()
-#
-#        torch.save({'state_dict':state_dict}, 'model_%s.pt' % (self.dset))
+
+        state_dict = {}
+        state_dict['discriminator'] = self.model['discriminator'].state_dict()
+        state_dict['generator'] = self.model['generator'].state_dict()
+
+        torch.save({'state_dict':state_dict}, 'model_%s.pt' % (self.dset))
 
 if __name__=="__main__" :
     m = module( sys.argv[1] )
