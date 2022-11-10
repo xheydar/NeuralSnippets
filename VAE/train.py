@@ -1,5 +1,7 @@
 import init
 
+import sys
+
 import torch
 from torchvision import transforms
 import torch.optim as optim
@@ -9,9 +11,9 @@ from datasets import datasets
 import model
 
 class module :
-    def __init__( self ):
-        self.dset_name = 'cifar10'
-        self.dataset = datasets[self.dset_name](root='../data', train=True, transform=transforms.ToTensor())
+    def __init__( self, dset ):
+        self.dset = dset
+        self.dataset = datasets[self.dset](root='../data', train=True, transform=transforms.ToTensor())
         self.data_loader = torch.utils.data.DataLoader(dataset=self.dataset.dataset, batch_size=128, shuffle=True)
 
     def build_model( self ):
@@ -52,9 +54,9 @@ class module :
         except AttributeError:
             state_dict = self.model['network'].state_dict()
 
-        torch.save({'state_dict':state_dict}, 'model_%s.pt' % (self.dset_name))
+        torch.save({'state_dict':state_dict}, 'model_%s.pt' % (self.dset))
 
 if __name__=="__main__" :
-    m = module()
+    m = module( sys.argv[1] )
     m.build_model()
     m.train(100)
