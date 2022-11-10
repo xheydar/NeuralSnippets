@@ -1,20 +1,23 @@
 import init
 
 import torch
-from torchvision import datasets, transforms
+from torchvision import transforms
 import torch.optim as optim
 from tqdm import tqdm
 
+from datasets import datasets
 import model
 
 class module :
     def __init__( self ):
-        self.dataset = datasets.MNIST(root='../data', train=True, transform=transforms.ToTensor(), download=True)
-        self.data_loader = torch.utils.data.DataLoader(dataset=self.dataset, batch_size=128, shuffle=True)
+        self.dset_name = 'cifar10'
+        self.dataset = datasets[self.dset_name](root='../data', train=True, transform=transforms.ToTensor())
+        self.data_loader = torch.utils.data.DataLoader(dataset=self.dataset.dataset, batch_size=128, shuffle=True)
 
     def build_model( self ):
+        indim = self.dataset.dim
         latent_size = 2
-        layers = [784, 512, 256]
+        layers = [indim, 512, 256]
 
         use_cuda = torch.cuda.is_available()
         device_name = "cuda" if use_cuda else "cpu"
@@ -25,12 +28,14 @@ class module :
         self.model['loss'] = model.Loss().to(self.device)
         
     def train( self, num_epoch=10 ):
+        indim = self.dataset.dim
+
         optimizer = optim.Adam(self.model['network'].parameters())
 
         for epoch in range(num_epoch):
             train_loss = 0
             for batch_idx, (data, _) in tqdm(enumerate(self.data_loader)):
-                data = data.view(-1, 784).to(self.device)
+                data = data.view(-1, indim).to(self.device)
                 optimizer.zero_grad()
         
                 mu, log_var, recon = self.model['network'](data)
@@ -47,8 +52,7 @@ class module :
         except AttributeError:
             state_dict = self.model['network'].state_dict()
 
-        torch.save({'state_dict':state_dict}, 'model.pt')
-
+        torch.save({'state_dict':state_dict}, 'model_%s.pt' % (self.dset_name))
 
 if __name__=="__main__" :
     m = module()
