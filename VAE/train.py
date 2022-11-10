@@ -16,7 +16,7 @@ class module :
 
     def build_model( self ):
         indim = self.dataset.dim
-        latent_size = 2
+        latent_size = 10
         layers = [indim, 512, 256]
 
         use_cuda = torch.cuda.is_available()
