@@ -91,6 +91,8 @@ class module :
             D_losses = []
             G_losses = []
 
+            print("Epoch %d/%d" % ( epoch+1, num_epoch ))
+
             for batch_idx, (X, _) in tqdm(enumerate(self.data_loader)):
                 X = X.view(-1, indim).to(self.device)
 
@@ -101,7 +103,7 @@ class module :
                 G_losses.append( G_l )
 
         
-            print(' ==> Epoch : %d, D Average Loss : %g, G Average Loss : %g' % (epoch, np.mean(D_losses), np.mean(G_losses) ) )
+            print(' ==> Epoch : %d, D Average Loss : %g, G Average Loss : %g' % (epoch+1, np.mean(D_losses), np.mean(G_losses) ) )
 #
 #        try :
 #            state_dict = self.model['network'].module.state_dict()
