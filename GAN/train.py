@@ -90,6 +90,37 @@ class module :
 
         return float(G_loss.data.item())
 
+    def pre_train( self, num_epoch=10 ):
+        lr = 0.0002
+        discriminator_optim = optim.Adam( self.model['discriminator'].parameters(), lr=lr )
+        generator_optim = optim.Adam( self.model['generator'].parameters(), lr=lr )
+
+
+        for epoch in range(num_epoch):
+            train_loss = 0
+
+            D_losses = []
+            G_losses = []
+
+            print("Epoch %d/%d" % ( epoch+1, num_epoch ))
+
+            for batch_idx, (X, _) in tqdm(enumerate(self.data_loader)):
+                X = X.to(self.device)
+
+                D_l = self.discriminator_train( X, discriminator_optim )
+
+                D_losses.append( D_l )
+
+            for batch_idx, (X, _) in tqdm(enumerate(self.data_loader)):
+                X = X.to(self.device)
+
+                G_l = self.generator_train( X, generator_optim )
+
+                G_losses.append( G_l )
+        
+            print(' ==> Epoch : %d, D Average Loss : %g, G Average Loss : %g' % (epoch+1, np.mean(D_losses), np.mean(G_losses) ) )
+
+
     def train( self, num_epoch=10 ):
         indim = self.dataset.dim
 
@@ -132,4 +163,5 @@ class module :
 if __name__=="__main__" :
     m = module( sys.argv[1] )
     m.build_model()
+    m.pre_train(10)
     m.train(1000)
