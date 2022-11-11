@@ -88,7 +88,7 @@ class Generator(nn.Module):
 
 netG = Generator(ngpu).to(device)
 netG.apply(weights_init)
-netG.load_state_dict(torch.load('weights/netG_epoch_99.pth'))
+#netG.load_state_dict(torch.load('weights/netG_epoch_99.pth'))
 print(netG)
 
 class Discriminator(nn.Module):
