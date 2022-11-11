@@ -91,7 +91,7 @@ class module :
         return float(G_loss.data.item())
 
     def pre_train( self, num_epoch=10 ):
-        lr = 0.0002
+        lr = 0.001
         discriminator_optim = optim.Adam( self.model['discriminator'].parameters(), lr=lr )
         generator_optim = optim.Adam( self.model['generator'].parameters(), lr=lr )
 
