@@ -26,7 +26,6 @@ class module :
         self.data_loader = torch.utils.data.DataLoader(dataset=self.dataset.dataset, batch_size=128, shuffle=True)
 
     def build_model( self ):
-        indim = self.dataset.dim
         self.latent_size = 10
 
         use_cuda = torch.cuda.is_available()
@@ -34,9 +33,23 @@ class module :
         self.device = torch.device( device_name )
 
         self.model = {}
-        self.model['generator'] = model.Generator( self.latent_size, indim ).to(self.device)
-        self.model['discriminator'] = model.Discriminator( indim ).to(self.device)
+        self.model['generator'] = model.Generator( self.latent_size, self.dataset.shape ).to(self.device)
+        self.model['discriminator'] = model.Discriminator( self.dataset.shape ).to(self.device)
         self.model['loss'] = model.Loss().to(self.device)
+
+    def dev_test_generator( self ):
+        X = torch.randn((128,self.latent_size))
+
+        out = self.model['generator'](X)
+
+        print( out.shape )
+
+    def dev_test_discriminator( self ):
+        X = torch.randn((128,1,28,28))
+
+        out = self.model['discriminator'](X)
+
+        print( out.shape )
 
     def discriminator_train( self, X, optim ):
         optim.zero_grad()
@@ -94,7 +107,7 @@ class module :
             print("Epoch %d/%d" % ( epoch+1, num_epoch ))
 
             for batch_idx, (X, _) in tqdm(enumerate(self.data_loader)):
-                X = X.view(-1, indim).to(self.device)
+                X = X.to(self.device)
 
                 D_l = self.discriminator_train( X, discriminator_optim )
                 G_l = self.generator_train( X, generator_optim )
