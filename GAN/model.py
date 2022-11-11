@@ -29,6 +29,7 @@ class Encoder( nn.Module ):
 
         self.layers = nn.Sequential(
             nn.Conv2d(1, nfeats, 1,1, bias=False ),
+            nn.BatchNorm2d(nfeats),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(nfeats, nfeats*2, 3,2,1, bias=False),
             nn.BatchNorm2d(nfeats*2),
@@ -66,10 +67,10 @@ class Generator( nn.Module ):
         self.layers = nn.Sequential(
             nn.ConvTranspose2d( nz, nfeats*4, 7,1,0,bias=False ),
             nn.BatchNorm2d(nfeats*4),
-            nn.ReLU(),
+            nn.ReLU(inplace=True),
             nn.ConvTranspose2d( nfeats*4, nfeats*2, 4,2,1, bias=False ),
             nn.BatchNorm2d(nfeats*2),
-            nn.ReLU(),
+            nn.ReLU(inplace=True),
             nn.ConvTranspose2d( nfeats*2, nfeats, 4,2,1, bias=False ),
             nn.BatchNorm2d(nfeats),
             nn.Conv2d( nfeats, 1, 1, bias=False ),
@@ -86,6 +87,7 @@ class Discriminator( nn.Module ):
 
         self.layers = nn.Sequential(
             nn.Conv2d(1, nfeats, 1,1, bias=False ),
+            nn.BatchNorm2d(nfeats),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(nfeats, nfeats*2, 3,2,1, bias=False),
             nn.BatchNorm2d(nfeats*2),
