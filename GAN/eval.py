@@ -37,8 +37,8 @@ class module :
         self.device = torch.device( device_name )
 
         self.model = {}
-        self.model['generator'] = model.Generator( self.latent_size, indim ).to(self.device)
-        self.model['discriminator'] = model.Discriminator( indim ).to(self.device)
+        self.model['generator'] = model.Generator( self.latent_size, self.dataset.shape ).to(self.device)
+        self.model['discriminator'] = model.Discriminator( self.dataset.shape).to(self.device)
         self.model['loss'] = model.Loss().to(self.device)
 
         model_data = torch.load( 'model_%s.pt' % ( self.dset ) , map_location='cpu' )

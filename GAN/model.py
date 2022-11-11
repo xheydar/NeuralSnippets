@@ -24,29 +24,23 @@ class Downsample( nn.Module ):
         return self.layer(X)
 
 class Encoder( nn.Module ):
-    def __init__( self, latent_size ):
+    def __init__( self, nfeats, latent_size ):
         super().__init__()
 
         self.layers = nn.Sequential(
-            nn.Conv2d(1,32,3,padding=1),
-            nn.LeakyReLU(0.2),
-            nn.Dropout(),
-            nn.Conv2d(32,32,3,padding=1),
-            nn.LeakyReLU(0.2),
-            nn.Dropout(),
-            Downsample(32,16),
-            nn.Conv2d(16,16,3,padding=1),
-            nn.LeakyReLU(0.2),
-            nn.Dropout(),
-            nn.Conv2d(16,16,3,padding=1),
-            nn.LeakyReLU(0.2),
-            nn.Dropout(),
-            Downsample(16,8),
-            nn.Flatten()
+            nn.Conv2d(1, nfeats, 1,1, bias=False ),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Conv2d(nfeats, nfeats*2, 3,2,1, bias=False),
+            nn.BatchNorm2d(nfeats*2),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Conv2d(nfeats*2, nfeats*4, 3,2,1, bias=False),
+            nn.BatchNorm2d(nfeats*4),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Conv2d(nfeats*4, latent_size, 7,1, bias=False ),
         )
 
-        self.mean = nn.Linear( 392, latent_size )
-        self.log_var = nn.Linear( 392, latent_size )
+        self.mean = nn.Conv2d(latent_size, latent_size,1, bias=False )
+        self.log_var = nn.Conv2d(latent_size, latent_size,1, bias=False )
 
     def forward( self, X ):
         X = self.layers(X)
@@ -66,35 +60,23 @@ class Sampler( nn.Module ):
         return eps.mul(std).add_(mu)
 
 class Generator( nn.Module ):
-    def __init__( self, g_input_dim, g_output_shape ):
+    def __init__( self, nz, nfeats ):
         super().__init__()
 
-        c, h, w = g_output_shape
-
-        self.base = nn.Sequential(
-            nn.Linear( g_input_dim, 64 ), # 1,7,7
-            nn.LeakyReLU(0.2),
-            nn.Linear( 64, 3136 ),
-            nn.LeakyReLU(0.2)
-        )
-
         self.layers = nn.Sequential(
-            nn.Conv2d( 64, 64, 3, padding=1 ),
-            nn.LeakyReLU(0.2),
-            nn.Conv2d( 64, 64, 3, padding=1 ),
-            nn.LeakyReLU(0.2),
-            Upsample(64, 32),
-            nn.Conv2d( 32, 32, 3, padding=1 ),
-            nn.LeakyReLU(0.2),
-            nn.Conv2d( 32, 32, 3, padding=1 ),
-            nn.LeakyReLU(0.2),
-            Upsample(32, 16),
-            nn.Conv2d(16,1, 3, padding=1 ),
+            nn.ConvTranspose2d( nz, nfeats*4, 7,1,0,bias=False ),
+            nn.BatchNorm2d(nfeats*4),
+            nn.ReLU(),
+            nn.ConvTranspose2d( nfeats*4, nfeats*2, 4,2,1, bias=False ),
+            nn.BatchNorm2d(nfeats*2),
+            nn.ReLU(),
+            nn.ConvTranspose2d( nfeats*2, nfeats, 4,2,1, bias=False ),
+            nn.BatchNorm2d(nfeats),
+            nn.Conv2d( nfeats, 1, 1, bias=False ),
         )
+
 
     def forward( self, X ):
-        X = self.base(X)
-        X = X.reshape(-1,64,7,7)
         X = self.layers(X)
         return X
 
@@ -131,7 +113,7 @@ class PretrainLoss( nn.Module ):
     def __init__( self ):
         super().__init__()
 
-        self.l1 = nn.L1Loss( reduction='sum' )
+        self.l1 = nn.L1Loss( reduction='mean' )
 
     def forward( self, x, mu, log_var, d ):
 

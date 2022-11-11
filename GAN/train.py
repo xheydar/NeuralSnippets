@@ -27,16 +27,16 @@ class module :
         self.data_loader = torch.utils.data.DataLoader(dataset=self.dataset.dataset, batch_size=128, shuffle=True)
 
     def build_model( self, pretrained=None ):
-        self.latent_size = 10
+        self.latent_size = 50
 
         use_cuda = torch.cuda.is_available()
         device_name = "cuda" if use_cuda else "cpu"
         self.device = torch.device( device_name )
 
         self.model = {}
-        self.model['encoder'] = model.Encoder( self.latent_size ).to(self.device)
+        self.model['encoder'] = model.Encoder( 64, self.latent_size ).to(self.device)
         self.model['sampler'] = model.Sampler()
-        self.model['generator'] = model.Generator( self.latent_size, self.dataset.shape )
+        self.model['generator'] = model.Generator( self.latent_size, 64 )
         self.model['discriminator'] = model.Discriminator( self.dataset.shape ).to(self.device)
         self.model['pretrain_loss'] = model.PretrainLoss().to(self.device)
         self.model['loss'] = model.Loss().to(self.device)
@@ -57,7 +57,7 @@ class module :
 
 
     def dev_test_generator( self ):
-        X = torch.randn((128,self.latent_size))
+        X = torch.randn((128,self.latent_size,1,1))
 
         out = self.model['generator'](X)
 
