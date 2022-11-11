@@ -26,7 +26,7 @@ class module :
         self.dataset = datasets[self.dset](root='../data', train=True, transform=transform)
         self.data_loader = torch.utils.data.DataLoader(dataset=self.dataset.dataset, batch_size=128, shuffle=True)
 
-    def build_model( self, weights = None ):
+    def build_model( self, pretrained=None ):
         self.latent_size = 10
 
         use_cuda = torch.cuda.is_available()
@@ -36,10 +36,16 @@ class module :
         self.model = {}
         self.model['encoder'] = model.Encoder( self.latent_size ).to(self.device)
         self.model['sampler'] = model.Sampler()
-        self.model['generator'] = model.Generator( self.latent_size, self.dataset.shape ).to(self.device)
+        self.model['generator'] = model.Generator( self.latent_size, self.dataset.shape )
         self.model['discriminator'] = model.Discriminator( self.dataset.shape ).to(self.device)
         self.model['pretrain_loss'] = model.PretrainLoss().to(self.device)
         self.model['loss'] = model.Loss().to(self.device)
+
+        if pretrained != None :
+            model_data = torch.load( pretrained , map_location='cpu' )
+            self.model['generator'].load_state_dict(  model_data['state_dict']['generator'], strict = True )
+
+        self.model['generator'] = self.model['generator'].to(self.device)
 
     def dev_test_encoder( self ):
         X = torch.randn((128,1,28,28))
@@ -226,6 +232,5 @@ if __name__=="__main__" :
         m.build_model()
         m.pretrain(50)
     elif stage == "train" :
-        pass
-    elif stage == "train_raw" :
-        pass
+        m.build_model(pretrained="pretrain_model_%s.pt" % (dset) )
+        m.train(100)
