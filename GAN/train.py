@@ -128,8 +128,10 @@ class module :
         torch.save({'state_dict':state_dict}, 'pretrain_model_%s.pt' % (self.dset))
 
 
-    def discriminator_train( self, X, optim ):
-        optim.zero_grad()
+    def discriminator_train( self, X, optim, z ):
+
+        self.model['discriminator'].zero_grad();
+        #optim.zero_grad()
 
         batch_size = len(X)
         x_real, y_real = X, torch.ones((batch_size,1)).to(self.device)
@@ -137,27 +139,28 @@ class module :
         D_real_out = self.model['discriminator']( x_real )
         D_real_loss = self.model['loss']( D_real_out, y_real )
 
-        z = torch.randn((batch_size,self.latent_size,1,1)).to(self.device) 
-
+        D_real_loss.backward()
 
         x_fake, y_fake = self.model['generator'](z), torch.zeros((batch_size,1)).to(self.device)
 
-        D_fake_out = self.model['discriminator']( x_fake )
+        D_fake_out = self.model['discriminator']( x_fake.detach() )
         D_fake_loss = self.model['loss']( D_fake_out, y_fake )
+
+        D_fake_loss.backward()
 
         D_loss = D_real_loss + D_fake_loss
 
-        D_loss.backward()
         optim.step()
 
         return float(D_loss.data.item())
         
-    def generator_train( self, X, optim ):
-        optim.zero_grad()
+    def generator_train( self, X, optim, z ):
+
+        self.model['generator'].zero_grad()
+        #optim.zero_grad()
 
         batch_size = len(X)
 
-        z = torch.randn((batch_size,self.latent_size,1,1)).to(self.device)
         y = torch.ones((batch_size,1)).to(self.device)
 
         G_output = self.model['generator'](z)
@@ -189,8 +192,13 @@ class module :
             for batch_idx, (X, _) in tqdm(enumerate(self.data_loader)):
                 X = X.to(self.device)
 
-                D_l = self.discriminator_train( X, discriminator_optim )
-                G_l = self.generator_train( X, generator_optim )
+                batch_size = len(X)
+                z = torch.randn((batch_size,self.latent_size,1,1)).to(self.device) 
+
+
+
+                D_l = self.discriminator_train( X, discriminator_optim, z )
+                G_l = self.generator_train( X, generator_optim, z )
 
                 D_losses.append( D_l )
                 G_losses.append( G_l )
