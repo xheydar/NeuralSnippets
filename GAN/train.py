@@ -228,4 +228,8 @@ if __name__=="__main__" :
         m.pretrain(50)
     elif stage == "train" :
         m.build_model(pretrained="pretrain_model_%s.pt" % ( dset ) )
-        m.train(5)
+        m.train(100)
+    elif state == "train_raw" :
+        m.build_model()
+        m.train(100)
+
