@@ -219,5 +219,5 @@ if __name__=="__main__" :
         m.build_model()
         m.pretrain(50)
     elif stage == "train" :
-        m.build_model()
+        m.build_model(pretrained="pretrain_model_%s.pt" % ( dset ) )
         m.train(5)
