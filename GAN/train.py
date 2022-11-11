@@ -49,6 +49,10 @@ class module :
         self.model['pretrain_loss'] = model.PretrainLoss().to(self.device)
         self.model['loss'] = model.Loss().to(self.device)
 
+        
+        self.model['generator'].apply( weights_init )
+        self.model['discriminator'].append( weights_init )
+
         if pretrained != None :
             print("Loading pretrained")
             model_data = torch.load( pretrained , map_location='cpu' )
