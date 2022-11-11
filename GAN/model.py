@@ -90,7 +90,6 @@ class Generator( nn.Module ):
             nn.LeakyReLU(0.2),
             Upsample(32, 16),
             nn.Conv2d(16,1, 3, padding=1 ),
-            nn.Tanh()
         )
 
     def forward( self, X ):
@@ -132,7 +131,7 @@ class PretrainLoss( nn.Module ):
     def __init__( self ):
         super().__init__()
 
-        self.l1 = nn.L1Loss( reduction='mean' )
+        self.l1 = nn.L1Loss( reduction='sum' )
 
     def forward( self, x, mu, log_var, d ):
 
