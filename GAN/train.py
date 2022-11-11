@@ -12,6 +12,14 @@ from tqdm import tqdm
 from datasets import datasets
 import model
 
+def weights_init(m):
+    classname = m.__class__.__name__
+    if classname.find('Conv') != -1:
+        nn.init.normal_(m.weight.data, 0.0, 0.02)
+    elif classname.find('BatchNorm') != -1:
+        nn.init.normal_(m.weight.data, 1.0, 0.02)
+        nn.init.constant_(m.bias.data, 0)
+
 class module :
     def __init__( self, dset ):
         self.dset = dset
@@ -161,8 +169,9 @@ class module :
         indim = self.dataset.dim
 
         lr = 0.0002
-        discriminator_optim = optim.Adam( self.model['discriminator'].parameters(), lr=lr )
-        generator_optim = optim.Adam( self.model['generator'].parameters(), lr=lr )
+        beta1 = 0.5
+        discriminator_optim = optim.Adam( self.model['discriminator'].parameters(), lr=lr, betas=(beta1, 0.999) )
+        generator_optim = optim.Adam( self.model['generator'].parameters(), lr=lr, betas=(beta1, 0.999) )
 
 
         for epoch in range(num_epoch):
@@ -206,5 +215,5 @@ if __name__=="__main__" :
         m.build_model()
         m.pretrain(50)
     elif stage == "train" :
-        m.build_model(pretrained="pretrain_model_%s.pt" % (dset) )
-        m.train(100)
+        m.build_model()
+        m.train(5)
