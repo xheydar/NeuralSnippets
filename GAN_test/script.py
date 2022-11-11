@@ -121,7 +121,7 @@ class Discriminator(nn.Module):
 
 netD = Discriminator(ngpu).to(device)
 netD.apply(weights_init)
-netD.load_state_dict(torch.load('weights/netD_epoch_99.pth'))
+#netD.load_state_dict(torch.load('weights/netD_epoch_99.pth'))
 print(netD)
 
 criterion = nn.BCELoss()
