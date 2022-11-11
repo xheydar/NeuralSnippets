@@ -134,7 +134,7 @@ fixed_noise = torch.randn(64, nz, 1, 1, device=device)
 real_label = 1
 fake_label = 0
 
-niter = 25
+niter = 100
 
 # Commented out IPython magic to ensure Python compatibility.
 for epoch in range(niter):
@@ -191,8 +191,8 @@ D = Discriminator(ngpu=1).eval()
 G = Generator(ngpu=1).eval()
 
 # load weights
-D.load_state_dict(torch.load('weights/netD_epoch_99.pth'))
-G.load_state_dict(torch.load('weights/netG_epoch_99.pth'))
+#D.load_state_dict(torch.load('weights/netD_epoch_99.pth'))
+#G.load_state_dict(torch.load('weights/netG_epoch_99.pth'))
 if torch.cuda.is_available():
     D = D.cuda()
     G = G.cuda()
