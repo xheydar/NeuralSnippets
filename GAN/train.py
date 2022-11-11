@@ -26,7 +26,7 @@ class module :
         self.dataset = datasets[self.dset](root='../data', train=True, transform=transform)
         self.data_loader = torch.utils.data.DataLoader(dataset=self.dataset.dataset, batch_size=128, shuffle=True)
 
-    def build_model( self ):
+    def build_model( self, weights = None ):
         self.latent_size = 10
 
         use_cuda = torch.cuda.is_available()
@@ -216,6 +216,15 @@ class module :
         torch.save({'state_dict':state_dict}, 'model_%s.pt' % (self.dset))
 
 if __name__=="__main__" :
-    m = module( sys.argv[1] )
-    m.build_model()
-    m.pretrain(10)
+    dset = sys.argv[1]
+    stage = sys.argv[2]
+
+    m = module( dset )
+
+    if stage == "pretrain" :
+        m.build_model()
+        m.pretrain(50)
+    elif stage == "train" :
+        pass
+    elif stage == "train_raw" :
+        pass
