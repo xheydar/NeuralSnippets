@@ -81,28 +81,20 @@ class Generator( nn.Module ):
         return X
 
 class Discriminator( nn.Module ):
-    def __init__( self, d_input_shape ):
+    def __init__( self, nfeats ):
         super().__init__()
 
-        c, h, w = d_input_shape
-
         self.layers = nn.Sequential(
-            nn.Conv2d(1,32,3,padding=1),
-            nn.LeakyReLU(0.2),
-            nn.Dropout(),
-            nn.Conv2d(32,32,3,padding=1),
-            nn.LeakyReLU(0.2),
-            nn.Dropout(),
-            Downsample(32,16),
-            nn.Conv2d(16,16,3,padding=1),
-            nn.LeakyReLU(0.2),
-            nn.Dropout(),
-            nn.Conv2d(16,16,3,padding=1),
-            nn.LeakyReLU(0.2),
-            nn.Dropout(),
-            Downsample(16,8),
+            nn.Conv2d(1, nfeats, 1,1, bias=False ),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Conv2d(nfeats, nfeats*2, 3,2,1, bias=False),
+            nn.BatchNorm2d(nfeats*2),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Conv2d(nfeats*2, nfeats*4, 3,2,1, bias=False),
+            nn.BatchNorm2d(nfeats*4),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Conv2d(nfeats*4, 1, 7,1, bias=False ),
             nn.Flatten(),
-            nn.Linear(392,1),
             nn.Sigmoid()
         )
 

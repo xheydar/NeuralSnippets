@@ -37,7 +37,7 @@ class module :
         self.model['encoder'] = model.Encoder( 64, self.latent_size ).to(self.device)
         self.model['sampler'] = model.Sampler()
         self.model['generator'] = model.Generator( self.latent_size, 64 )
-        self.model['discriminator'] = model.Discriminator( self.dataset.shape ).to(self.device)
+        self.model['discriminator'] = model.Discriminator( 64 ).to(self.device)
         self.model['pretrain_loss'] = model.PretrainLoss().to(self.device)
         self.model['loss'] = model.Loss().to(self.device)
 
@@ -67,6 +67,8 @@ class module :
         X = torch.randn((128,1,28,28))
 
         out = self.model['discriminator'](X)
+
+        print( out.shape )
 
     def dev_autoencoder( self ):
         X = torch.randn((128,1,28,28))
@@ -123,7 +125,9 @@ class module :
         D_real_out = self.model['discriminator']( x_real )
         D_real_loss = self.model['loss']( D_real_out, y_real )
 
-        z = torch.randn((batch_size,self.latent_size)).to(self.device) 
+        z = torch.randn((batch_size,self.latent_size,1,1)).to(self.device) 
+
+
         x_fake, y_fake = self.model['generator'](z), torch.zeros((batch_size,1)).to(self.device)
 
         D_fake_out = self.model['discriminator']( x_fake )
@@ -141,7 +145,7 @@ class module :
 
         batch_size = len(X)
 
-        z = torch.randn((batch_size,self.latent_size)).to(self.device)
+        z = torch.randn((batch_size,self.latent_size,1,1)).to(self.device)
         y = torch.ones((batch_size,1)).to(self.device)
 
         G_output = self.model['generator'](z)
