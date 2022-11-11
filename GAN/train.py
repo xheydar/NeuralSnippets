@@ -51,7 +51,7 @@ class module :
 
         
         self.model['generator'].apply( weights_init )
-        self.model['discriminator'].append( weights_init )
+        self.model['discriminator'].apply( weights_init )
 
         if pretrained != None :
             print("Loading pretrained")
