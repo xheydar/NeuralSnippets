@@ -96,7 +96,7 @@ class module :
                 train_loss += loss.item()
                 optimizer.step()
         
-            print('====> Epoch: {} Average loss: {:.4f}'.format(epoch, train_loss / len(self.data_loader.dataset)))
+            print('====> Epoch: {}/{} Average loss: {:.4f}'.format(epoch+1, num_epoch, train_loss / len(self.data_loader.dataset)))
 
         try :
             state_dict = self.model['network'].module.state_dict()
