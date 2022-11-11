@@ -124,8 +124,8 @@ class module :
     def train( self, num_epoch=10 ):
         indim = self.dataset.dim
 
-        lr = 0.001
-        discriminator_optim = optim.Adam( self.model['discriminator'].parameters(), lr=lr )
+        lr = 0.0002
+        discriminator_optim = optim.SGD( self.model['discriminator'].parameters(), lr=lr )
         generator_optim = optim.Adam( self.model['generator'].parameters(), lr=lr )
 
 
