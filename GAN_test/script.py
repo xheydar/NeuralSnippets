@@ -146,7 +146,7 @@ for epoch in range(niter):
         netD.zero_grad()
         real_cpu = data[0].to(device)
         batch_size = real_cpu.size(0)
-        label = torch.full((batch_size,), real_label, device=device)
+        label = torch.full((batch_size,), real_label, device=device, dtype=torch.float32)
 
         output = netD(real_cpu)
         errD_real = criterion(output, label)
@@ -154,7 +154,7 @@ for epoch in range(niter):
         D_x = output.mean().item()
 
         # train with fake
-        noise = torch.randn(batch_size, nz, 1, 1, device=device)
+        noise = torch.randn(batch_size, nz, 1, 1, device=device, dtype=torch.float32)
         fake = netG(noise)
         label.fill_(fake_label)
         output = netD(fake.detach())
