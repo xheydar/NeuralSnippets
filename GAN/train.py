@@ -163,5 +163,4 @@ class module :
 if __name__=="__main__" :
     m = module( sys.argv[1] )
     m.build_model()
-    m.pre_train(10)
     m.train(1000)
