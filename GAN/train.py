@@ -98,10 +98,11 @@ class module :
         
             print('====> Epoch: {}/{} Average loss: {:.4f}'.format(epoch+1, num_epoch, train_loss / len(self.data_loader.dataset)))
 
-        try :
-            state_dict = self.model['network'].module.state_dict()
-        except AttributeError:
-            state_dict = self.model['network'].state_dict()
+        state_dict = {}
+        
+        #state_dict['discriminator'] = self.model['discriminator'].state_dict()
+        state_dict['encoder'] = self.model['encoder'].state_dict()
+        state_dict['generator'] = self.model['generator'].state_dict()
 
         torch.save({'state_dict':state_dict}, 'pretrain_model_%s.pt' % (self.dset))
 
