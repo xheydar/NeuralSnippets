@@ -90,7 +90,6 @@ class Generator( nn.Module ):
             nn.LeakyReLU(0.2),
             Upsample(32, 16),
             nn.Conv2d(16,1, 3, padding=1 ),
-            nn.Tanh()
         )
 
     def forward( self, X ):

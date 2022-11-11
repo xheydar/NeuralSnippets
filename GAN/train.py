@@ -42,6 +42,7 @@ class module :
         self.model['loss'] = model.Loss().to(self.device)
 
         if pretrained != None :
+            print("Loading pretrained")
             model_data = torch.load( pretrained , map_location='cpu' )
             self.model['generator'].load_state_dict(  model_data['state_dict']['generator'], strict = True )
 
