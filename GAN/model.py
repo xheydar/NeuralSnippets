@@ -113,7 +113,7 @@ class PretrainLoss( nn.Module ):
     def __init__( self ):
         super().__init__()
 
-        self.l1 = nn.L1Loss( reduction='mean' )
+        self.l1 = nn.L1Loss( reduction='sum' )
 
     def forward( self, x, mu, log_var, d ):
 
