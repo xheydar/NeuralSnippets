@@ -2,6 +2,7 @@ import init
 
 import sys
 import numpy as np
+from itertools import chain
 
 import torch
 from torchvision import transforms
@@ -33,9 +34,20 @@ class module :
         self.device = torch.device( device_name )
 
         self.model = {}
+        self.model['encoder'] = model.Encoder( self.latent_size ).to(self.device)
+        self.model['sampler'] = model.Sampler()
         self.model['generator'] = model.Generator( self.latent_size, self.dataset.shape ).to(self.device)
         self.model['discriminator'] = model.Discriminator( self.dataset.shape ).to(self.device)
+        self.model['pretrain_loss'] = model.PretrainLoss().to(self.device)
         self.model['loss'] = model.Loss().to(self.device)
+
+    def dev_test_encoder( self ):
+        X = torch.randn((128,1,28,28))
+
+        out = self.model['encoder'](X)
+
+        print( out.shape )
+
 
     def dev_test_generator( self ):
         X = torch.randn((128,self.latent_size))
@@ -49,7 +61,50 @@ class module :
 
         out = self.model['discriminator'](X)
 
-        print( out.shape )
+    def dev_autoencoder( self ):
+        X = torch.randn((128,1,28,28))
+
+        mu, logvar = self.model['encoder'](X)
+        z = self.model['sampler']( mu, logvar )
+        g = self.model['generator'](z)
+
+        l = self.model['pretrain_loss']( X, mu, logvar, g )
+
+        print(l)
+
+
+    def pretrain(self, num_epoch):
+        indim = self.dataset.dim
+
+        optimizer = optim.Adam( chain( self.model['encoder'].parameters(),
+                                       self.model['sampler'].parameters(),
+                                       self.model['generator'].parameters()) )
+
+        for epoch in range(num_epoch):
+            train_loss = 0
+            for batch_idx, (X, _) in tqdm(enumerate(self.data_loader)):
+                X = X.to(self.device)
+                optimizer.zero_grad()
+
+                mu, logvar = self.model['encoder'](X)
+                z = self.model['sampler']( mu, logvar )
+                g = self.model['generator'](z)
+
+                loss = self.model['pretrain_loss']( X, mu, logvar, g )
+        
+                loss.backward()
+                train_loss += loss.item()
+                optimizer.step()
+        
+            print('====> Epoch: {} Average loss: {:.4f}'.format(epoch, train_loss / len(self.data_loader.dataset)))
+
+        try :
+            state_dict = self.model['network'].module.state_dict()
+        except AttributeError:
+            state_dict = self.model['network'].state_dict()
+
+        torch.save({'state_dict':state_dict}, 'pretrain_model_%s.pt' % (self.dset))
+
 
     def discriminator_train( self, X, optim ):
         optim.zero_grad()
@@ -163,4 +218,4 @@ class module :
 if __name__=="__main__" :
     m = module( sys.argv[1] )
     m.build_model()
-    m.train(1000)
+    m.pretrain(10)
