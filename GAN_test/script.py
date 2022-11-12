@@ -32,12 +32,8 @@ torch.manual_seed(manualSeed)
 
 
 mnist = datasets['mnist']('../data', train=True)
-dataloader = torch.utils.data.DataLoader(mnist.dataset, batch_size=64,
-                                         shuffle=True, num_workers=2)
-
-#checking the availability of cuda devices
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
+dataloader = torch.utils.data.DataLoader( mnist.dataset, batch_size=64,
+                                          shuffle=True, num_workers=2 )
 
 # custom weights initialization called on netG and netD
 def weights_init(m):
@@ -48,88 +44,92 @@ def weights_init(m):
         m.weight.data.normal_(1.0, 0.02)
         m.bias.data.fill_(0)
 
-#number of channels in image(since the image is grayscale the number of channels are 1)
-nc=1
 
-# input noise dimension
-nz = 100
-# number of generator filters
-ngf = 64
-#number of discriminator filters
-ndf = 64
+if __name__=="__main__" :
+    #checking the availability of cuda devices
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-netG = Generator( nc=nc, nz=nz, ngf=ngf ).to(device)
-netG.apply(weights_init)
+    #number of channels in image(since the image is grayscale the number of channels are 1)
+    nc=1
+
+    # input noise dimension
+    nz = 100
+    # number of generator filters
+    ngf = 64
+    #number of discriminator filters
+    ndf = 64
+
+    netG = Generator( nc=nc, nz=nz, ngf=ngf ).to(device)
+    netG.apply(weights_init)
+
+    netD = Discriminator( nc=nc, ndf=ndf ).to(device)
+    netD.apply(weights_init)
+    #netD.load_state_dict(torch.load('weights/netD_epoch_99.pth'))
+    #print(netD)
+
+    criterion = Loss()
+
+    # setup optimizer
+    optimizerD = optim.Adam(netD.parameters(), lr=0.0002, betas=(0.5, 0.999))
+    optimizerG = optim.Adam(netG.parameters(), lr=0.0002, betas=(0.5, 0.999))
+
+    fixed_noise = torch.randn(64, nz, 1, 1, device=device)
+    real_label = 1
+    fake_label = 0
+
+    niter = 25
+
+    fake = netG(fixed_noise)
+    vutils.save_image(fake.detach(),'output/fake_samples_epoch_%03d.png' % (0), normalize=True)
 
 
-netD = Discriminator( nc=nc, ndf=ndf ).to(device)
-netD.apply(weights_init)
-#netD.load_state_dict(torch.load('weights/netD_epoch_99.pth'))
-#print(netD)
+    # Commented out IPython magic to ensure Python compatibility.
+    for epoch in range(niter):
+        for i, data in enumerate(dataloader, 0):
+            ############################
+            # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
+            ###########################
+            # train with real
+            netD.zero_grad()
+            real_cpu = data[0].to(device)
+            batch_size = real_cpu.size(0)
+            label = torch.full((batch_size,), real_label, device=device, dtype=torch.float32)
 
-criterion = Loss()
+            output = netD(real_cpu)
+            errD_real = criterion(output, label)
+            errD_real.backward()
+            D_x = output.mean().item()
 
-# setup optimizer
-optimizerD = optim.Adam(netD.parameters(), lr=0.0002, betas=(0.5, 0.999))
-optimizerG = optim.Adam(netG.parameters(), lr=0.0002, betas=(0.5, 0.999))
-
-fixed_noise = torch.randn(64, nz, 1, 1, device=device)
-real_label = 1
-fake_label = 0
-
-niter = 25
-
-fake = netG(fixed_noise)
-vutils.save_image(fake.detach(),'output/fake_samples_epoch_%03d.png' % (0), normalize=True)
-
-
-# Commented out IPython magic to ensure Python compatibility.
-for epoch in range(niter):
-    for i, data in enumerate(dataloader, 0):
-        ############################
-        # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
-        ###########################
-        # train with real
-        netD.zero_grad()
-        real_cpu = data[0].to(device)
-        batch_size = real_cpu.size(0)
-        label = torch.full((batch_size,), real_label, device=device, dtype=torch.float32)
-
-        output = netD(real_cpu)
-        errD_real = criterion(output, label)
-        errD_real.backward()
-        D_x = output.mean().item()
-
-        # train with fake
-        noise = torch.randn(batch_size, nz, 1, 1, device=device, dtype=torch.float32)
-        fake = netG(noise)
-        label.fill_(fake_label)
-        output = netD(fake.detach())
-        errD_fake = criterion(output, label)
-        errD_fake.backward()
-        D_G_z1 = output.mean().item()
-        errD = errD_real + errD_fake
-        optimizerD.step()
-        ############################
-        # (2) Update G network: maximize log(D(G(z)))
-        ###########################
-        netG.zero_grad()
-        label.fill_(real_label) 
-        output = netD(fake)
-        errG = criterion(output, label)
-        errG.backward()
-        D_G_z2 = output.mean().item()
-        optimizerG.step()
-        print('[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.4f / %.4f'
+            # train with fake
+            noise = torch.randn(batch_size, nz, 1, 1, device=device, dtype=torch.float32)
+            fake = netG(noise)
+            label.fill_(fake_label)
+            output = netD(fake.detach())
+            errD_fake = criterion(output, label)
+            errD_fake.backward()
+            D_G_z1 = output.mean().item()
+            errD = errD_real + errD_fake
+            optimizerD.step()
+            ############################
+            # (2) Update G network: maximize log(D(G(z)))
+            ###########################
+            netG.zero_grad()
+            label.fill_(real_label) 
+            output = netD(fake)
+            errG = criterion(output, label)
+            errG.backward()
+            D_G_z2 = output.mean().item()
+            optimizerG.step()
+            print('[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.4f / %.4f'
                    % (epoch, niter, i, len(dataloader),
                      errD.item(), errG.item(), D_x, D_G_z1, D_G_z2))
 
-    #vutils.save_image(real_cpu,'output/real_samples.png' ,normalize=True)
-    fake = netG(fixed_noise)
-    vutils.save_image(fake.detach(),'output/fake_samples_epoch_%03d.png' % (epoch+1), normalize=True)        
+        #vutils.save_image(real_cpu,'output/real_samples.png' ,normalize=True)
+        fake = netG(fixed_noise)
+        vutils.save_image(fake.detach(),'output/fake_samples_epoch_%03d.png' % (epoch+1), normalize=True)        
 
-    torch.save(netG.state_dict(), 'weights/netG_epoch_%d.pth' % (epoch))
-    torch.save(netD.state_dict(), 'weights/netD_epoch_%d.pth' % (epoch))
+        torch.save(netG.state_dict(), 'weights/netG_epoch_%d.pth' % (epoch))
+        torch.save(netD.state_dict(), 'weights/netD_epoch_%d.pth' % (epoch))
 
 #num_gpu = 1 if torch.cuda.is_available() else 0
 
