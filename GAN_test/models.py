@@ -44,7 +44,10 @@ class Encoder(nn.Module):
         super().__init__()
 
         self.layers = nn.Sequential(
-            DownSample( nc, ngf, 2, 1 ),
+            nn.Conv2d(nc, ngf, 4, 2, 1, bias=False),
+            nn.ReLU(inplace=True),
+
+            #DownSample( nc, ngf, 2, 1 ),
             DownSample( ngf, ngf*2, 2, 1 ),
             DownSample( ngf*2, ngf*4, 2,1 )
             #nn.Conv2d(nc, ngf, 4, 2, 1, bias=False),
@@ -136,7 +139,8 @@ class Discriminator(nn.Module):
         super().__init__()
 
         self.main = nn.Sequential(
-            DownSample( nc, ndf, 2, 1 ),
+            nn.Conv2d(nc, ndf, 4, 2, 1, bias=False),
+            nn.LeakyReLU(0.2, inplace=True),
             DownSample( ndf, ndf*2, 2, 1 ),
             DownSample( ndf*2, ndf*4, 2,1 ),
 
