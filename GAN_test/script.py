@@ -17,7 +17,7 @@ import torchvision.utils as vutils
 #import matplotlib.pyplot as plt
 
 from models import Generator, Discriminator, Loss
-from datasets import mnist
+from datasets import datasets
 
 
 cudnn.benchmark = True
