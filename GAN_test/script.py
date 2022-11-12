@@ -14,8 +14,8 @@ import torch.utils.data
 import torchvision.datasets as dset
 import torchvision.transforms as transforms
 import torchvision.utils as vutils
-
 from itertools import chain
+from tqdm import tqdm
 #import matplotlib.pyplot as plt
 
 from models import Encoder, Sampler, Generator, Discriminator, Loss, LossVAE
@@ -93,10 +93,12 @@ class module :
                                       self.model['netG'].parameters()) )
 
         dataloader = torch.utils.data.DataLoader( self.mnist.dataset, batch_size=64,
-                                                  shuffle=True, num_workers=2 )
+                                                  shuffle=True, num_workers=4 )
 
         for epoch in range(num_epoch):
-            for i, (X, _ ) in enumerate(dataloader):
+            print("Pretraining : %d/%d" % (epoch+1 , num_epoch))
+            loss_values = []
+            for i, (X, _ ) in tqdm(enumerate(dataloader)):
                 X = X.to(self.device)
 
                 optimizer.zero_grad()
@@ -111,10 +113,9 @@ class module :
 
                 L = loss.item()
 
-                print(epoch+1, i+1, L)
+                loss_values,append( L )
 
-
-
+            print("Average Loss : ", torch.mean(loss_values) )
 
     def train( self, num_epoch=25 ):
         optimizerD = optim.Adam(self.model['netD'].parameters(), lr=0.0002, betas=(0.5, 0.999))
