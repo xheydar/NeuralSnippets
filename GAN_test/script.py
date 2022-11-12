@@ -146,21 +146,23 @@ class module :
                 real_cpu = data[0].to(self.device)
                 batch_size = real_cpu.size(0)
                 label = torch.full((batch_size,), real_label, device=self.device, dtype=torch.float32)
+                noise = torch.randn(batch_size, self.nz, 1, 1, device=self.device, dtype=torch.float32)
 
                 output = self.model['netD'](real_cpu)
                 errD_real = self.model['loss'](output, label)
-                errD_real.backward()
+                #errD_real.backward()
                 D_x = output.mean().item()
 
                 # train with fake
-                noise = torch.randn(batch_size, self.nz, 1, 1, device=self.device, dtype=torch.float32)
                 fake = self.model['netG'](noise)
                 label.fill_(fake_label)
                 output = self.model['netD'](fake.detach())
                 errD_fake = self.model['loss'](output, label)
-                errD_fake.backward()
+                #errD_fake.backward()
                 D_G_z1 = output.mean().item()
                 errD = errD_real + errD_fake
+
+                errD.backward()
                 optimizerD.step()
                 ############################
                 # (2) Update G network: maximize log(D(G(z)))
