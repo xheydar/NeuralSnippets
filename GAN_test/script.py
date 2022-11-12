@@ -113,7 +113,7 @@ class module :
 
                 L = loss.item()
 
-                loss_values,append( L )
+                loss_values.append( L )
 
             print("Average Loss : ", torch.mean(loss_values) )
 
