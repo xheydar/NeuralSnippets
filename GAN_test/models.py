@@ -56,3 +56,12 @@ class Discriminator(nn.Module):
         output = self.main(input)
         return output.view(-1, 1).squeeze(1)
 
+class Loss( nn.Module ):
+    def __init__( self ):
+        super().__init__()
+
+        self.loss = nn.BCELoss()
+
+    def forward( self, output, label ):
+        return self.loss( output, label )
+

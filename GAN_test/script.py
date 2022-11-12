@@ -12,7 +12,7 @@ import torchvision.transforms as transforms
 import torchvision.utils as vutils
 #import matplotlib.pyplot as plt
 
-from models import Generator, Discriminator
+from models import Generator, Discriminator, Loss
 
 cudnn.benchmark = True
 
@@ -65,7 +65,7 @@ netD.apply(weights_init)
 #netD.load_state_dict(torch.load('weights/netD_epoch_99.pth'))
 #print(netD)
 
-criterion = nn.BCELoss()
+criterion = Loss()
 
 # setup optimizer
 optimizerD = optim.Adam(netD.parameters(), lr=0.0002, betas=(0.5, 0.999))
@@ -75,7 +75,11 @@ fixed_noise = torch.randn(64, nz, 1, 1, device=device)
 real_label = 1
 fake_label = 0
 
-niter = 100
+niter = 25
+
+fake = netG(fixed_noise)
+vutils.save_image(fake.detach(),'output/fake_samples_epoch_%03d.png' % (0), normalize=True)
+
 
 # Commented out IPython magic to ensure Python compatibility.
 for epoch in range(niter):
@@ -120,7 +124,7 @@ for epoch in range(niter):
 
     #vutils.save_image(real_cpu,'output/real_samples.png' ,normalize=True)
     fake = netG(fixed_noise)
-    vutils.save_image(fake.detach(),'output/fake_samples_epoch_%03d.png' % (epoch), normalize=True)        
+    vutils.save_image(fake.detach(),'output/fake_samples_epoch_%03d.png' % (epoch+1), normalize=True)        
 
     torch.save(netG.state_dict(), 'weights/netG_epoch_%d.pth' % (epoch))
     torch.save(netD.state_dict(), 'weights/netD_epoch_%d.pth' % (epoch))
