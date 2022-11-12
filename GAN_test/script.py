@@ -12,6 +12,8 @@ import torchvision.transforms as transforms
 import torchvision.utils as vutils
 #import matplotlib.pyplot as plt
 
+from models import Generator, Discriminator
+
 cudnn.benchmark = True
 
 #set manual seed to a constant get a consistent output
@@ -27,8 +29,6 @@ dataset = dset.MNIST(root='./data', download=True,
                            transforms.ToTensor(),
                            transforms.Normalize((0.5,), (0.5,)),
                        ]))
-#number of channels in image(since the image is grayscale the number of channels are 1)
-nc=1
 
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=64,
                                          shuffle=True, num_workers=2)
@@ -36,12 +36,6 @@ dataloader = torch.utils.data.DataLoader(dataset, batch_size=64,
 #checking the availability of cuda devices
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-# input noise dimension
-nz = 100
-# number of generator filters
-ngf = 64
-#number of discriminator filters
-ndf = 64
 
 # custom weights initialization called on netG and netD
 def weights_init(m):
@@ -52,67 +46,24 @@ def weights_init(m):
         m.weight.data.normal_(1.0, 0.02)
         m.bias.data.fill_(0)
 
-class Generator(nn.Module):
-    def __init__(self, nc=1, nz=100, ngf=64):
-        super(Generator, self).__init__()
-        self.main = nn.Sequential(
-            # input is Z, going into a convolution
-            nn.ConvTranspose2d(     nz, ngf * 8, 4, 1, 0, bias=False),
-            nn.BatchNorm2d(ngf * 8),
-            nn.ReLU(True),
-            # state size. (ngf*8) x 4 x 4
-            nn.ConvTranspose2d(ngf * 8, ngf * 4, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(ngf * 4),
-            nn.ReLU(True),
-            # state size. (ngf*4) x 8 x 8
-            nn.ConvTranspose2d(ngf * 4, ngf * 2, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(ngf * 2),
-            nn.ReLU(True),
-            # state size. (ngf*2) x 16 x 16
-            nn.ConvTranspose2d(ngf * 2,     ngf, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(ngf),
-            nn.ReLU(True),
-            nn.ConvTranspose2d(    ngf,      nc, kernel_size=1, stride=1, padding=2, bias=False),
-            nn.Tanh()
-        )
+#number of channels in image(since the image is grayscale the number of channels are 1)
+nc=1
 
-    def forward(self, input):
-        output = self.main(input)
-        return output
+# input noise dimension
+nz = 100
+# number of generator filters
+ngf = 64
+#number of discriminator filters
+ndf = 64
 
-netG = Generator().to(device)
+netG = Generator( nc=nc, nz=nz, ngf=ngf ).to(device)
 netG.apply(weights_init)
-#netG.load_state_dict(torch.load('weights/netG_epoch_99.pth'))
-print(netG)
 
-class Discriminator(nn.Module):
-    def __init__(self, nc=1, ndf=64):
-        super(Discriminator, self).__init__()
-        self.main = nn.Sequential(
-            # input is (nc) x 64 x 64
-            nn.Conv2d(nc, ndf, 4, 2, 1, bias=False),
-            nn.LeakyReLU(0.2, inplace=True),
-            # state size. (ndf) x 32 x 32
-            nn.Conv2d(ndf, ndf * 2, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(ndf * 2),
-            nn.LeakyReLU(0.2, inplace=True),
-            # state size. (ndf*2) x 16 x 16
-            nn.Conv2d(ndf * 2, ndf * 4, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(ndf * 4),
-            nn.LeakyReLU(0.2, inplace=True),
-            # state size. (ndf*4) x 8 x 8
-            nn.Conv2d(ndf * 4, 1, 4, 2, 1, bias=False),
-            nn.Sigmoid()
-        )
 
-    def forward(self, input):
-        output = self.main(input)
-        return output.view(-1, 1).squeeze(1)
-
-netD = Discriminator().to(device)
+netD = Discriminator( nc=nc, ndf=ndf ).to(device)
 netD.apply(weights_init)
 #netD.load_state_dict(torch.load('weights/netD_epoch_99.pth'))
-print(netD)
+#print(netD)
 
 criterion = nn.BCELoss()
 
