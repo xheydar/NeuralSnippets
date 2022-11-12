@@ -14,7 +14,7 @@ class Encoder(nn.Module):
             # state size. (ndf*2) x 16 x 16
             nn.Conv2d(ngf * 2, ngf * 4, 4, 2, 1, bias=False),
             nn.BatchNorm2d(ngf * 4),
-            nn.LeakyReLU(0.2, inplace=True),
+            nn.ReLU(inplace=True),
             # state size. (ndf*4) x 8 x 8
         )
 
