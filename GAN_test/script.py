@@ -127,7 +127,7 @@ class module :
                      errD.item(), errG.item(), D_x, D_G_z1, D_G_z2))
 
             #vutils.save_image(real_cpu,'output/real_samples.png' ,normalize=True)
-            fake = netG(fixed_noise)
+            fake = self.model['netG'](fixed_noise)
             vutils.save_image(fake.detach(),'output/fake_samples_epoch_%03d.png' % (epoch+1), normalize=True)        
 
         #torch.save(netG.state_dict(), 'weights/netG_epoch_%d.pth' % (epoch))
