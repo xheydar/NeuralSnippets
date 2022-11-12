@@ -36,8 +36,6 @@ dataloader = torch.utils.data.DataLoader(dataset, batch_size=64,
 #checking the availability of cuda devices
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-# number of gpu's available
-ngpu = 1
 # input noise dimension
 nz = 100
 # number of generator filters
@@ -55,9 +53,8 @@ def weights_init(m):
         m.bias.data.fill_(0)
 
 class Generator(nn.Module):
-    def __init__(self, ngpu, nc=1, nz=100, ngf=64):
+    def __init__(self, nc=1, nz=100, ngf=64):
         super(Generator, self).__init__()
-        self.ngpu = ngpu
         self.main = nn.Sequential(
             # input is Z, going into a convolution
             nn.ConvTranspose2d(     nz, ngf * 8, 4, 1, 0, bias=False),
@@ -80,21 +77,17 @@ class Generator(nn.Module):
         )
 
     def forward(self, input):
-        if input.is_cuda and self.ngpu > 1:
-            output = nn.parallel.data_parallel(self.main, input, range(self.ngpu))
-        else:
-            output = self.main(input)
+        output = self.main(input)
         return output
 
-netG = Generator(ngpu).to(device)
+netG = Generator().to(device)
 netG.apply(weights_init)
 #netG.load_state_dict(torch.load('weights/netG_epoch_99.pth'))
 print(netG)
 
 class Discriminator(nn.Module):
-    def __init__(self, ngpu, nc=1, ndf=64):
+    def __init__(self, nc=1, ndf=64):
         super(Discriminator, self).__init__()
-        self.ngpu = ngpu
         self.main = nn.Sequential(
             # input is (nc) x 64 x 64
             nn.Conv2d(nc, ndf, 4, 2, 1, bias=False),
@@ -113,13 +106,10 @@ class Discriminator(nn.Module):
         )
 
     def forward(self, input):
-        if input.is_cuda and self.ngpu > 1:
-            output = nn.parallel.data_parallel(self.main, input, range(self.ngpu))
-        else:
-            output = self.main(input)
+        output = self.main(input)
         return output.view(-1, 1).squeeze(1)
 
-netD = Discriminator(ngpu).to(device)
+netD = Discriminator().to(device)
 netD.apply(weights_init)
 #netD.load_state_dict(torch.load('weights/netD_epoch_99.pth'))
 print(netD)
@@ -176,43 +166,46 @@ for epoch in range(niter):
         print('[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.4f / %.4f'
                    % (epoch, niter, i, len(dataloader),
                      errD.item(), errG.item(), D_x, D_G_z1, D_G_z2))
-        if i % 100 == 0:
-            vutils.save_image(real_cpu,'output/real_samples.png' ,normalize=True)
-            fake = netG(fixed_noise)
-            vutils.save_image(fake.detach(),'output/fake_samples_epoch_%03d.png' % (epoch), normalize=True)        
+
+    #vutils.save_image(real_cpu,'output/real_samples.png' ,normalize=True)
+    fake = netG(fixed_noise)
+    vutils.save_image(fake.detach(),'output/fake_samples_epoch_%03d.png' % (epoch), normalize=True)        
+
     torch.save(netG.state_dict(), 'weights/netG_epoch_%d.pth' % (epoch))
     torch.save(netD.state_dict(), 'weights/netD_epoch_%d.pth' % (epoch))
 
-num_gpu = 1 if torch.cuda.is_available() else 0
+#num_gpu = 1 if torch.cuda.is_available() else 0
 
 # load the models
 
-D = Discriminator(ngpu=1).eval()
-G = Generator(ngpu=1).eval()
+
+
+#D = Discriminator(ngpu=1).eval()
+#G = Generator(ngpu=1).eval()
 
 # load weights
 #D.load_state_dict(torch.load('weights/netD_epoch_99.pth'))
 #G.load_state_dict(torch.load('weights/netG_epoch_99.pth'))
-if torch.cuda.is_available():
-    D = D.cuda()
-    G = G.cuda()
+#if torch.cuda.is_available():
+#    D = D.cuda()
+#    G = G.cuda()
 
-batch_size = 25
-latent_size = 100
+#batch_size = 25
+#latent_size = 100
 
-fixed_noise = torch.randn(batch_size, latent_size, 1, 1)
-if torch.cuda.is_available():
-    fixed_noise = fixed_noise.cuda()
-fake_images = G(fixed_noise)
+#fixed_noise = torch.randn(batch_size, latent_size, 1, 1)
+#if torch.cuda.is_available():
+#    fixed_noise = fixed_noise.cuda()
+#fake_images = G(fixed_noise)
 
 
 # z = torch.randn(batch_size, latent_size).cuda()
 # z = Variable(z)
 # fake_images = G(z)
 
-fake_images_np = fake_images.cpu().detach().numpy()
-fake_images_np = fake_images_np.reshape(fake_images_np.shape[0], 28, 28)
-R, C = 5, 5
+#fake_images_np = fake_images.cpu().detach().numpy()
+#fake_images_np = fake_images_np.reshape(fake_images_np.shape[0], 28, 28)
+#R, C = 5, 5
 #for i in range(batch_size):
 #    plt.subplot(R, C, i + 1)
 #    plt.imshow(fake_images_np[i], cmap='gray')
