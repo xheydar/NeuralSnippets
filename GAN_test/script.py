@@ -96,7 +96,7 @@ class module :
                                                   shuffle=True, num_workers=2 )
 
         for epoch in range(num_epoch):
-            for i, X in enumerate(dataloader):
+            for i, (X, _ ) in enumerate(dataloader):
                 X = X.to(self.device)
 
                 optimizer.zero_grad()
