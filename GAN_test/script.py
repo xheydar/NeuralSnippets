@@ -58,10 +58,10 @@ class module :
         ndf = 64
 
         self.model = {}
-        self.model['netG'] = Generator( nc=nc, nz=nz, ngf=ngf ).to(device)
+        self.model['netG'] = Generator( nc=nc, nz=nz, ngf=ngf ).to(self.device)
         self.model['netG'].apply(weights_init)
 
-        self.model['netD'] = Discriminator( nc=nc, ndf=ndf ).to(device)
+        self.model['netD'] = Discriminator( nc=nc, ndf=ndf ).to(self.device)
         self.model['netD'].apply(weights_init)
 
         self.model['loss'] = Loss()
@@ -70,7 +70,7 @@ class module :
         optimizerD = optim.Adam(netD.parameters(), lr=0.0002, betas=(0.5, 0.999))
         optimizerG = optim.Adam(netG.parameters(), lr=0.0002, betas=(0.5, 0.999))
 
-        fixed_noise = torch.randn(64, nz, 1, 1, device=device)
+        fixed_noise = torch.randn(64, nz, 1, 1, device=self.device)
         real_label = 1
         fake_label = 0
 
@@ -91,9 +91,9 @@ class module :
             
                 self.model['netD'].zero_grad()
             
-                real_cpu = data[0].to(device)
+                real_cpu = data[0].to(self.device)
                 batch_size = real_cpu.size(0)
-                label = torch.full((batch_size,), real_label, device=device, dtype=torch.float32)
+                label = torch.full((batch_size,), real_label, device=self.device, dtype=torch.float32)
 
                 output = self.model['netD'](real_cpu)
                 errD_real = self.model['loss'](output, label)
@@ -101,7 +101,7 @@ class module :
                 D_x = output.mean().item()
 
                 # train with fake
-                noise = torch.randn(batch_size, nz, 1, 1, device=device, dtype=torch.float32)
+                noise = torch.randn(batch_size, nz, 1, 1, device=self.device, dtype=torch.float32)
                 fake = self.model['netG'](noise)
                 label.fill_(fake_label)
                 output = self.model['netD'](fake.detach())
