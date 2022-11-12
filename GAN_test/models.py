@@ -7,7 +7,7 @@ class Encoder(nn.Module):
 
         self.main = nn.Sequential(
             nn.Conv2d(nc, ngf, 4, 2, 1, bias=False),
-            nn.BatchNorm2d( nfg ),
+            nn.BatchNorm2d( ngf ),
             nn.ReLU(inplace=True),
             nn.Conv2d(ngf, ngf * 2, 4, 2, 1, bias=False),
             nn.BatchNorm2d(ngf * 2),
