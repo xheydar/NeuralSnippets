@@ -119,8 +119,8 @@ class module :
             print("Average Loss : ", np.mean(loss_values) )
 
     def train( self, num_epoch=25 ):
-        optimizerD = optim.Adam(self.model['netD'].parameters(), lr=0.0002)#, betas=(0.5, 0.999))
-        optimizerG = optim.Adam(self.model['netG'].parameters(), lr=0.0002)#, betas=(0.5, 0.999))
+        optimizerD = optim.Adam(self.model['netD'].parameters(), lr=0.0002, betas=(0.5, 0.999))
+        optimizerG = optim.Adam(self.model['netG'].parameters(), lr=0.0002, betas=(0.5, 0.999))
 
         fixed_noise = torch.randn(64, self.nz, 1, 1, device=self.device)
         real_label = 1
