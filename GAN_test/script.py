@@ -13,6 +13,8 @@ import torchvision.utils as vutils
 #import matplotlib.pyplot as plt
 
 from models import Generator, Discriminator, Loss
+from datasets import mnist
+
 
 cudnn.benchmark = True
 
@@ -23,14 +25,10 @@ random.seed(manualSeed)
 torch.manual_seed(manualSeed)
 
 #loading the dataset
-dataset = dset.MNIST(root='./data', download=True,
-                       transform=transforms.Compose([
-                           transforms.Resize(28),
-                           transforms.ToTensor(),
-                           transforms.Normalize((0.5,), (0.5,)),
-                       ]))
 
-dataloader = torch.utils.data.DataLoader(dataset, batch_size=64,
+
+mnist = datasets['mnist']('../data', train=True)
+dataloader = torch.utils.data.DataLoader(mnist.dataset, batch_size=64,
                                          shuffle=True, num_workers=2)
 
 #checking the availability of cuda devices
