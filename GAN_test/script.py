@@ -109,7 +109,7 @@ class module :
                 loss.backward()
                 optimizer.step()
 
-                L = output.mean().item()
+                L = loss.item()
 
                 print(epoch+1, i+1, L)
 
