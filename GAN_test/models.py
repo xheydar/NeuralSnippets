@@ -62,7 +62,7 @@ class Encoder(nn.Module):
         )
 
         self.mean = nn.Conv2d( ngf * 4, nz, 4,2,1, bias=False )
-        #self.logvar = nn.Conv2d( ngf * 4, nz, 4,2,1, bias=False )
+        self.logvar = nn.Conv2d( ngf * 4, nz, 4,2,1, bias=False )
 
     def forward(self,X):
         X = self.layers(X)
