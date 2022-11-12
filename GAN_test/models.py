@@ -21,7 +21,7 @@ class Generator(nn.Module):
             nn.ConvTranspose2d(ngf * 2,     ngf, 4, 2, 1, bias=False),
             nn.BatchNorm2d(ngf),
             nn.ReLU(True),
-            nn.ConvTranspose2d(    ngf,      nc, kernel_size=1, stride=1, padding=2, bias=False),
+            nn.ConvTranspose2d( ngf, nc, kernel_size=1, stride=1, padding=2, bias=False),
             nn.Tanh()
         )
 
