@@ -41,9 +41,7 @@ def weights_init(m):
 class module :
     def __init__( self ):
         self.mnist = datasets['mnist']('../data', train=True)
-        self.dataloader = torch.utils.data.DataLoader( self.mnist.dataset, batch_size=64,
-                                                       shuffle=True, num_workers=2 )
-
+        
     def build_model( self ):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -77,6 +75,10 @@ class module :
 
         fake = self.model['netG'](fixed_noise)
         vutils.save_image(fake.detach(),'output/fake_samples_epoch_%03d.png' % (0), normalize=True)
+
+        dataloader = torch.utils.data.DataLoader( self.mnist.dataset, batch_size=64,
+                                                  shuffle=True, num_workers=2 )
+
 
 
         # Commented out IPython magic to ensure Python compatibility.
