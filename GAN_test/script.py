@@ -14,11 +14,13 @@ import torch.utils.data
 import torchvision.datasets as dset
 import torchvision.transforms as transforms
 import torchvision.utils as vutils
+
+from itertools import chain
 #import matplotlib.pyplot as plt
 
-from models import Generator, Discriminator, Loss
+from models import Encoder, Sampler, Generator, Discriminator, Loss, LossVAE
 from datasets import datasets
-
+from batch_generator import BatchGenerator
 
 cudnn.benchmark = True
 
@@ -41,6 +43,9 @@ def weights_init(m):
 class module :
     def __init__( self ):
         self.mnist = datasets['mnist']('../data', train=True)
+
+    def build_batches( self ):
+        self.batches = BatchGenerator( self.mnist.dataset, batch_size=64, randomize=True )
         
     def build_model( self ):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -57,13 +62,59 @@ class module :
         ndf = 64
 
         self.model = {}
+        
+        self.model['encoder'] = Encoder( nc=nc, nz=nz, ngf=ngf ).to(self.device)
+        self.model['sampler'] = Sampler().to(self.device)
+        self.model['loss_vae'] = LossVAE().to(self.device)
+
         self.model['netG'] = Generator( nc=nc, nz=nz, ngf=ngf ).to(self.device)
         self.model['netG'].apply(weights_init)
 
         self.model['netD'] = Discriminator( nc=nc, ndf=ndf ).to(self.device)
         self.model['netD'].apply(weights_init)
 
-        self.model['loss'] = Loss()
+        self.model['loss'] = Loss().to(self.device)
+
+    def do_stuff( self ):
+        X = self.batches[10]
+
+        mu, logvar = self.model['encoder'](X)
+        z = self.model['sampler'](mu,logvar)
+        c = self.model['netG'](z)
+
+        print( X[0] )
+        print( c[0] )
+
+        print( self.model['loss_vae']( c, mu, logvar, c ) )
+
+    def pretrain( self, num_epoch=25 ): 
+        optimizer = optim.Adam(chain( [ self.model['encoder'].parameters(),
+                                        self.model['sampler'].parameters(),
+                                        self.model['netG'].parameters() ]) )
+
+        dataloader = torch.utils.data.DataLoader( self.mnist.dataset, batch_size=64,
+                                                  shuffle=True, num_workers=2 )
+
+        for epoch in range(num_epoch):
+            for i, X in enumerate(dataloader):
+                X = X.to(self.device)
+
+                optimizer.zero_grad()
+
+                mu, logvar = self.model['encoder'](X)
+                z = self.model['sampler'](mu,logvar)
+                c = self.model['netG'](z)
+
+                loss = self.model['loss_vae']( c, mu, logvar, c )
+                loss.backward()
+                optimizer.step()
+
+                L = output.mean().item()
+
+                print(epoch+1, i+1, L)
+
+
+
 
     def train( self, num_epoch=25 ):
         optimizerD = optim.Adam(self.model['netD'].parameters(), lr=0.0002, betas=(0.5, 0.999))
@@ -80,16 +131,14 @@ class module :
                                                   shuffle=True, num_workers=2 )
 
 
-
         # Commented out IPython magic to ensure Python compatibility.
         for epoch in range(num_epoch):
-            for i, data in enumerate(dataloader, 0):
+            for i, data in enumerate(dataloader):
                 ############################
                 # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
                 ###########################
                 # train with real
-
-            
+ 
                 self.model['netD'].zero_grad()
             
                 real_cpu = data[0].to(self.device)
@@ -140,4 +189,5 @@ class module :
 if __name__=="__main__" :
     m = module()
     m.build_model()
+    m.pretrain(5)
     m.train(25)
