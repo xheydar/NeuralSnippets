@@ -68,8 +68,6 @@ class Encoder(nn.Module):
         X = self.layers(X)
 
         mu = self.mean(X)
-
-        return mu
         logvar = self.logvar(X)
         
         return mu, logvar
