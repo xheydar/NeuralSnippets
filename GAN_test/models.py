@@ -9,10 +9,10 @@ class UpSample( nn.Module ):
             nn.ConvTranspose2d( ch_in, ch_out, 4, stride, padding, bias=False),
             nn.BatchNorm2d(ch_out),
             nn.ReLU(True),
-            nn.Conv2d( ch_out, ch_out, 3, 1, 1, bias=False ),
+            nn.ConvTranspose2d( ch_out, ch_out, 3, 1, 1, bias=False ),
             nn.BatchNorm2d(ch_out),
             nn.ReLU(True),
-            nn.Conv2d( ch_out, ch_out, 3, 1, 1, bias=False ),
+            nn.ConvTranspose2d( ch_out, ch_out, 3, 1, 1, bias=False ),
             nn.BatchNorm2d(ch_out),
             nn.ReLU(True)
         )

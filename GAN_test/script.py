@@ -77,15 +77,15 @@ class module :
         self.model['loss'] = Loss().to(self.device)
 
     def do_stuff( self ):
-        #noise = torch.randn(64, self.nz, 1, 1, device=self.device, dtype=torch.float32)
-        #out = self.model['netG'](noise)
-        #print( out.shape )
-
-        data = torch.randn(64,1,28,28, device=self.device, dtype=torch.float32)
-
-        out = self.model['netD'](data)
-
+        noise = torch.randn(64, self.nz, 1, 1, device=self.device, dtype=torch.float32)
+        out = self.model['netG'](noise)
         print( out.shape )
+
+        #data = torch.randn(64,1,28,28, device=self.device, dtype=torch.float32)
+
+        #out = self.model['netD'](data)
+
+        #print( out.shape )
 
         
     def pretrain( self, num_epoch=25 ): 
