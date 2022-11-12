@@ -15,6 +15,7 @@ import torchvision.datasets as dset
 import torchvision.transforms as transforms
 import torchvision.utils as vutils
 from itertools import chain
+import numpy as np
 from tqdm import tqdm
 #import matplotlib.pyplot as plt
 
@@ -115,7 +116,7 @@ class module :
 
                 loss_values.append( L )
 
-            print("Average Loss : ", torch.mean(loss_values) )
+            print("Average Loss : ", np.mean(loss_values) )
 
     def train( self, num_epoch=25 ):
         optimizerD = optim.Adam(self.model['netD'].parameters(), lr=0.0002, betas=(0.5, 0.999))
