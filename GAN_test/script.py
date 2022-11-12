@@ -52,6 +52,7 @@ class module :
 
         # input noise dimension
         nz = 100
+        self.nz = nz
         # number of generator filters
         ngf = 64
         #number of discriminator filters
@@ -70,11 +71,9 @@ class module :
         optimizerD = optim.Adam(self.model['netD'].parameters(), lr=0.0002, betas=(0.5, 0.999))
         optimizerG = optim.Adam(self.model['netG'].parameters(), lr=0.0002, betas=(0.5, 0.999))
 
-        fixed_noise = torch.randn(64, nz, 1, 1, device=self.device)
+        fixed_noise = torch.randn(64, self.nz, 1, 1, device=self.device)
         real_label = 1
         fake_label = 0
-
-        niter = 25
 
         fake = self.model['netG'](fixed_noise)
         vutils.save_image(fake.detach(),'output/fake_samples_epoch_%03d.png' % (0), normalize=True)
@@ -101,7 +100,7 @@ class module :
                 D_x = output.mean().item()
 
                 # train with fake
-                noise = torch.randn(batch_size, nz, 1, 1, device=self.device, dtype=torch.float32)
+                noise = torch.randn(batch_size, self.nz, 1, 1, device=self.device, dtype=torch.float32)
                 fake = self.model['netG'](noise)
                 label.fill_(fake_label)
                 output = self.model['netD'](fake.detach())
