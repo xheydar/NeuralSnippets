@@ -88,9 +88,9 @@ class module :
         print( self.model['loss_vae']( c, mu, logvar, c ) )
 
     def pretrain( self, num_epoch=25 ): 
-        optimizer = optim.Adam(chain( [ self.model['encoder'].parameters(),
-                                        self.model['sampler'].parameters(),
-                                        self.model['netG'].parameters() ]) )
+        optimizer = optim.Adam(chain( self.model['encoder'].parameters(),
+                                      self.model['sampler'].parameters(),
+                                      self.model['netG'].parameters()) )
 
         dataloader = torch.utils.data.DataLoader( self.mnist.dataset, batch_size=64,
                                                   shuffle=True, num_workers=2 )
