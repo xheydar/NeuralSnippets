@@ -77,17 +77,17 @@ class module :
         self.model['loss'] = Loss().to(self.device)
 
     def do_stuff( self ):
-        X = self.batches[10]
+        #noise = torch.randn(64, self.nz, 1, 1, device=self.device, dtype=torch.float32)
+        #out = self.model['netG'](noise)
+        #print( out.shape )
 
-        mu, logvar = self.model['encoder'](X)
-        z = self.model['sampler'](mu,logvar)
-        c = self.model['netG'](z)
+        data = torch.randn(64,1,28,28, device=self.device, dtype=torch.float32)
 
-        print( X[0] )
-        print( c[0] )
+        out = self.model['netD'](data)
 
-        print( self.model['loss_vae']( c, mu, logvar, c ) )
+        print( out.shape )
 
+        
     def pretrain( self, num_epoch=25 ): 
         optimizer = optim.Adam(chain( self.model['encoder'].parameters(),
                                       self.model['sampler'].parameters(),
