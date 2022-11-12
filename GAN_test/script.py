@@ -150,7 +150,7 @@ class module :
 
                 output = self.model['netD'](real_cpu)
                 errD_real = self.model['loss'](output, label)
-                #errD_real.backward()
+                errD_real.backward()
                 D_x = output.mean().item()
 
                 # train with fake
@@ -158,11 +158,10 @@ class module :
                 label.fill_(fake_label)
                 output = self.model['netD'](fake.detach())
                 errD_fake = self.model['loss'](output, label)
-                #errD_fake.backward()
+                errD_fake.backward()
                 D_G_z1 = output.mean().item()
-                errD = errD_real + errD_fake
+                #errD = errD_real + errD_fake
 
-                errD.backward()
                 optimizerD.step()
                 ############################
                 # (2) Update G network: maximize log(D(G(z)))
