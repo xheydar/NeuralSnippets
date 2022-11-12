@@ -160,7 +160,7 @@ class module :
                 errD_fake = self.model['loss'](output, label)
                 errD_fake.backward()
                 D_G_z1 = output.mean().item()
-                #errD = errD_real + errD_fake
+                errD = errD_real + errD_fake
 
                 optimizerD.step()
                 ############################
