@@ -43,7 +43,7 @@ def weights_init(m):
 
 class module :
     def __init__( self ):
-        self.mnist = datasets['mnist']('../data', train=True)
+        self.mnist = datasets['fashion_mnist']('../data', train=True)
 
     def build_batches( self ):
         self.batches = BatchGenerator( self.mnist.dataset, batch_size=64, randomize=True )
