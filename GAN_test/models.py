@@ -103,7 +103,9 @@ class Generator(nn.Module):
 
         self.main = nn.Sequential(
             # input is Z, going into a convolution
-            UpSample( nz, ngf*8, 1, 0 ),
+            nn.ConvTranspose2d( nz, ngf * 8, 4, 1, 0, bias=False),
+            nn.BatchNorm2d(ngf * 8),
+            nn.ReLU(True),
             UpSample( ngf*8, ngf*4, 2,1 ),
             UpSample( ngf*4, ngf*2, 2,1),
             UpSample( ngf*2, ngf, 2,1),
