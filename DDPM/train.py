@@ -42,11 +42,6 @@ class module :
         t = torch.randint(0, self.timesteps, (self.batch_size,), device=self.device).long()
 
         x_noisy, noise = self.noise_scheduler.forward_diffusion_sample( x, t )
-
-        print( x_noisy.device )
-        print( t.device )
-
-
         noise_pred = self.model['unet'](x_noisy, t)
         loss = self.model['loss']( noise, noise_pred )
 
@@ -75,6 +70,12 @@ class module :
                 t = torch.randint(0, self.timesteps, (self.batch_size,), device=self.device).long()
                 
                 x_noisy, noise = self.noise_scheduler.forward_diffusion_sample( x, t )
+
+    
+                print( x_noisy.device )
+                print( t.device )
+
+
                 noise_pred = self.model['unet'](x_noisy, t)
                 loss = self.model['loss']( noise, noise_pred )
 
