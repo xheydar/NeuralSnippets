@@ -71,11 +71,6 @@ class module :
                 
                 x_noisy, noise = self.noise_scheduler.forward_diffusion_sample( x, t, device=self.device )
 
-    
-                print( x_noisy.device )
-                print( t.device )
-
-
                 noise_pred = self.model['unet'](x_noisy, t)
                 loss = self.model['loss']( noise, noise_pred )
 
