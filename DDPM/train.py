@@ -92,7 +92,7 @@ if __name__=="__main__" :
 
     m = module()
     m.load_model()
-    m.train()
+    m.train(num_epoch=300)
 
 
 
