@@ -69,7 +69,7 @@ class module :
                 x = batch[0].to(self.device)
                 t = torch.randint(0, self.timesteps, (self.batch_size,), device=self.device).long()
                 
-                x_noisy, noise = self.noise_scheduler.forward_diffusion_sample( x, t )
+                x_noisy, noise = self.noise_scheduler.forward_diffusion_sample( x, t, device=self.device )
 
     
                 print( x_noisy.device )
