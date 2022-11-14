@@ -1,5 +1,7 @@
 import init
 
+import os
+
 import torch
 import numpy as np
 from torch import optim
@@ -59,6 +61,9 @@ class module :
         optimizer = optim.Adam(self.model['unet'].parameters(), lr=0.001)
         dataloader = torch.utils.data.DataLoader(dataset=self.dataset.dataset, batch_size=self.batch_size, shuffle=True)
 
+        if not os.path.exists('./snapshots') : 
+            os.path.makedir('./snapshots')
+
         for epoch in range(num_epoch):
             print("Epoch : %d/%d" % ( epoch+1, num_epoch ) )
             loss_values = []
@@ -78,7 +83,10 @@ class module :
 
                 loss.backward()
                 optimizer.step()
+
             print( np.mean(loss_values) )
+            state_dict = self.model['unet'].state_dict()
+            torch.save({'state_dict':state_dict}, './snapshots/model_snapshot_%d.pt' % (epoch+1))
 
 if __name__=="__main__" :
 
