@@ -67,7 +67,7 @@ class module :
                 optimizer.zero_grad()
 
                 x = batch[0].to(self.device)
-                t = torch.randint(0, self.timesteps, (self.batch_size,), device=self.device).long()
+                t = torch.randint(0, self.timesteps, (len(x),), device=self.device).long()
                 
                 x_noisy, noise = self.noise_scheduler.forward_diffusion_sample( x, t, device=self.device )
 
