@@ -62,7 +62,7 @@ class module :
         dataloader = torch.utils.data.DataLoader(dataset=self.dataset.dataset, batch_size=self.batch_size, shuffle=True)
 
         if not os.path.exists('./snapshots') : 
-            os.makedir('./snapshots')
+            os.makedirs('./snapshots')
 
         for epoch in range(num_epoch):
             print("Epoch : %d/%d" % ( epoch+1, num_epoch ) )
