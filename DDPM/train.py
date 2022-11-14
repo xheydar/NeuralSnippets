@@ -42,6 +42,11 @@ class module :
         t = torch.randint(0, self.timesteps, (self.batch_size,), device=self.device).long()
 
         x_noisy, noise = self.noise_scheduler.forward_diffusion_sample( x, t )
+
+        print( x_noisy.device )
+        print( t.device )
+
+
         noise_pred = self.model['unet'](x_noisy, t)
         loss = self.model['loss']( noise, noise_pred )
 
@@ -60,6 +65,7 @@ class module :
         dataloader = torch.utils.data.DataLoader(dataset=self.dataset.dataset, batch_size=self.batch_size, shuffle=True)
 
         for epoch in range(num_epoch):
+            print("Epoch : %d/%d" % ( epoch+1, num_epoch ) )
             loss_values = []
             for batch_idx, batch in tqdm(enumerate(dataloader)):
 
