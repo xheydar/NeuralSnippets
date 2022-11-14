@@ -21,8 +21,9 @@ class module :
 
         self.timesteps = 300
         self.batch_size = 64
+        self.image_size = 64
 
-        self.dataset = datasets['stanfordcars']('../data', image_size=64)
+        self.dataset = datasets['stanfordcars']('../data', image_size=self.image_size)
         self.noise_scheduler = NoiseScheduler( self.timesteps, start=0.0001, end=0.02 )
 
     def build_batches( self ):
@@ -56,6 +57,25 @@ class module :
 
         #image = self.dataset.reverse_transform( image[0] )
         #pp.imshow(image)
+
+    @torch.no_grad()
+    def sample_plot_image( self ):
+        # Sample noise
+        img_size = self.image_size
+        img = torch.randn((1, 3, img_size, img_size), device=device)
+        #plt.figure(figsize=(15,15))
+        #plt.axis('off')
+        num_images = 10
+        stepsize = int(self.timesteps/num_images)
+
+        for i in range(0,self.timesteps)[::-1]:
+            t = torch.full((1,), i, device=device, dtype=torch.long)
+            noise_pred = self.model['unet']( img, t )
+            img = self.noise_scheduler.sample_timestep(img, t, noise_pred)
+            #if i % stepsize == 0:
+            #    plt.subplot(1, num_images, i/stepsize+1)
+            #    show_tensor_image(img.detach().cpu())
+        #plt.show()
 
     def train( self, num_epoch=100 ):
         optimizer = optim.Adam(self.model['unet'].parameters(), lr=0.001)

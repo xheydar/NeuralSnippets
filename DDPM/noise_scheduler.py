@@ -33,3 +33,20 @@ class NoiseScheduler :
         # mean + variance
         return sqrt_alphas_cumprod_t.to(device) * x_0.to(device) + sqrt_one_minus_alphas_cumprod_t.to(device) \
                 * noise.to(device), noise.to(device)
+
+    @torch.no_grad()
+    def sample_timestamp( self, x, t, noise_pred ):
+        betas_t = self.get_index_from_list(self.betas, t, x.shape)
+        sqrt_one_minus_alphas_cumprod_t = self.get_index_from_list(self.sqrt_one_minus_alphas_cumprod, t, x.shape)
+        sqrt_recip_alphas_t = self.get_index_from_list(self.sqrt_recip_alphas, t, x.shape)
+
+        model_mean = sqrt_recip_alphas * ( x - betas_t * noise_pred / sqrt_one_minus_alphas_cumprod )
+        posterior_variance_t = get_index_from_list(self.posterior_variance, t, x.shape)
+
+        if t == 0 :
+            return model_mean
+        else :
+            noise = torch.randn_like(x)
+            return model_mean + torch.sqrt( posterior_variance_t ) * noise
+
+
