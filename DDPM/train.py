@@ -8,7 +8,9 @@ from torch import optim
 from tqdm import tqdm
 
 from datasets import datasets
-from noise_scheduler import NoiseScheduler
+#from noise_scheduler import NoiseScheduler
+from diffusion_tools import DiffusionTools
+from diffusion_transform import DiffusionTransform
 from batch_generator import BatchGenerator
 
 import model
@@ -23,23 +25,35 @@ class module :
         self.batch_size = 64
         self.image_size = 64
 
-        self.dataset = datasets['stanfordcars']('../data', image_size=self.image_size)
-        self.noise_scheduler = NoiseScheduler( self.timesteps, start=0.0001, end=0.02 )
+        self.dataset = datasets['cifar10']('../data', image_size=self.image_size)
 
-    def build_batches( self ):
-        self.batches = BatchGenerator( self.dataset.dataset, self.batch_size, randomize=True )
-
-    def load_model( self ):
-        
         use_cuda = torch.cuda.is_available()
         device_name = "cuda" if use_cuda else "cpu"
         self.device = torch.device( device_name )
 
+    def setup_diffusion( self ):
+        self.diffusion_tools = DiffusionTools(num_steps=self.timesteps, img_size=self.image_size, device=self.device)
+
+    def build_batches( self ):
+        transform = DiffusionTransform( self.diffusion_tools, device=self.device )
+        self.batches = BatchGenerator( self.dataset.dataset, self.batch_size, transform=transform, randomize=True )
+
+    def load_model( self ):
         self.model = {}
-        self.model['unet'] = model.SimpleUnet().to(self.device)
+        self.model['unet'] = model.UNet().to(self.device)
         self.model['loss'] = model.Loss().to(self.device)
 
     def do_stuff( self ):
+        x_noisy, noise, t, y = self.batches[10]
+
+        out = self.model['unet']( x_noisy, t )
+
+
+        return
+
+
+
+
         x = self.batches[10].to(self.device)
 
         t = torch.randint(0, self.timesteps, (self.batch_size,), device=self.device).long()

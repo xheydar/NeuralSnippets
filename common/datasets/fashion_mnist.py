@@ -2,6 +2,7 @@ import torch
 import torchvision
 import torchvision.transforms as transforms
 
+
 class fashion_mnist_dataset :
     def __init__( self, root, train ):
         transform=transforms.Compose([

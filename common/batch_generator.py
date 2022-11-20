@@ -2,8 +2,9 @@ import torch
 import numpy as np
 
 class BatchGenerator :
-    def __init__( self, dataset, batch_size, randomize=False ):
+    def __init__( self, dataset, batch_size, transform, randomize=False ):
         self.dataset = dataset
+        self.transform = transform
         ndata = len(self.dataset)
 
         inds = np.arange(ndata)
@@ -33,7 +34,9 @@ class BatchGenerator :
 
 
         data = torch.cat( data, dim=0 )
-        return data
+        labels = torch.IntTensor( labels ) 
+
+        return self.transform( data, labels )
 
 
 
