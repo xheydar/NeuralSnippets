@@ -1,9 +1,8 @@
 import torch
 
 class DiffusionTransform :
-    def __init__( self, diffusion_tools, device ):
+    def __init__( self, diffusion_tools ):
         self.diffusion_tools = diffusion_tools
-        self.device = device
 
     def __call__( self, X, Y ):
 
