@@ -31,8 +31,6 @@ class module :
         device_name = "cuda" if use_cuda else "cpu"
         self.device = torch.device( device_name )
 
-    def setup_diffusion( self ):
-
     def build_batches( self ):
 
         self.diffusion_tools = DiffusionTools(num_steps=self.timesteps, img_size=self.image_size)
@@ -85,7 +83,6 @@ class module :
 if __name__=="__main__" :
 
     m = module()
-    m.setup_diffusion()
     m.build_batches()
     m.load_model()
     m.train(num_epoch=300)
