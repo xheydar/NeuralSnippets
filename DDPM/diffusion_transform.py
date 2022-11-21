@@ -7,9 +7,6 @@ class DiffusionTransform :
 
     def __call__( self, X, Y ):
 
-        X = X.to(self.device)
-        Y = Y.to(self.device)
-
         batch_size = len(X)
         t = self.diffusion_tools.sample_timesteps( batch_size )
 

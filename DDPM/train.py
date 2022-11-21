@@ -32,10 +32,11 @@ class module :
         self.device = torch.device( device_name )
 
     def setup_diffusion( self ):
-        self.diffusion_tools = DiffusionTools(num_steps=self.timesteps, img_size=self.image_size, device=self.device)
 
     def build_batches( self ):
-        transform = DiffusionTransform( self.diffusion_tools, device=self.device )
+
+        self.diffusion_tools = DiffusionTools(num_steps=self.timesteps, img_size=self.image_size)
+        transform = DiffusionTransform( self.diffusion_tools )
         self.batches = BatchGenerator( self.dataset.dataset, self.batch_size, transform=transform, randomize=True )
 
     def load_model( self ):
@@ -62,6 +63,10 @@ class module :
             print("Epoch : %d/%d" % ( epoch+1, num_epoch ) )
             loss_values = []
             for batch_idx, ( x_noisy, noise, t, y ) in tqdm(enumerate(dataloader)):
+                x_noisy = x_noisy.to(self.device)
+                noise = noise.to(self.device)
+                t = t.to(self.device)
+                y = y.to(self.device)
 
                 optimizer.zero_grad()
 
