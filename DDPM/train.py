@@ -80,6 +80,8 @@ class module :
 if __name__=="__main__" :
 
     m = module()
+    m.setup_diffusion()
+    m.build_batches()
     m.load_model()
     m.train(num_epoch=300)
 
