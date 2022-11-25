@@ -1,0 +1,14 @@
+data_root:
+  Darwin: /Users/heydar/Work/void/projects/pt
+  Linux: /network/basestorage/data/pt
+
+project: snippets
+
+templates:
+  model: 'model.pt'
+  snapshots: 'snapshots/model_snapshot_%d.pt'
+
+params :
+  timesteps: 300
+  batch_size: 64
+  image_size: 64

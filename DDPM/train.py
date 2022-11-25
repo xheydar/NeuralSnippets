@@ -14,16 +14,19 @@ from diffusion_transform import DiffusionTransform
 from batch_generator import BatchGenerator
 
 import model
+from config import config
 
 from matplotlib import pyplot as pp
 pp.ion()
 
 class module :
-    def __init__( self ):
+    def __init__( self, cfg ):
 
-        self.timesteps = 300
-        self.batch_size = 64
-        self.image_size = 64
+        self._cfg = cfg
+
+        self.timesteps = self._cfg.params['timesteps']
+        self.batch_size = self._cfg.params['batch_size']
+        self.image_size = self._cfg.params['image_size']
 
         self.dataset = datasets['cifar10']('../data', image_size=self.image_size)
 
@@ -77,17 +80,20 @@ class module :
                 optimizer.step()
 
             print( np.mean(loss_values) )
-            state_dict = self.model['unet'].state_dict()
-            torch.save({'state_dict':state_dict}, './snapshots/model_snapshot_%d.pt' % (epoch+1))
+
+            if self._cfg.save_snapshots :
+                state_dict = self.model['unet'].state_dict()
+                torch.save({'state_dict':state_dict}, self._cfg.snapshots_tmp % (epoch+1))
+
+        state_dict = self.model['unet'].state_dict()
+        torch.save({'state_dict':state_dict}, self._cfg.model_path )
+
 
 if __name__=="__main__" :
-
-    m = module()
+    cfg = config('config.yaml','20221125')
+    
+    m = module( cfg )
     m.build_batches()
     m.load_model()
     m.train(num_epoch=300)
-
-
-
-
 
