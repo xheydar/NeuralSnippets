@@ -27,6 +27,7 @@ class stanfordcars_dataset :
 
         self.dim = 3 * image_size * image_size
         self.shape = [3, image_size, image_size ]
+        self.num_classes = 196
 
         self.reverse_transform = transforms.Compose([
             transforms.Lambda( lambda t : (t+1)/2 ),

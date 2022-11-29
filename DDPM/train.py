@@ -20,35 +20,34 @@ from matplotlib import pyplot as pp
 pp.ion()
 
 class module :
-    def __init__( self, cfg ):
+    def __init__( self, cfg_fname, tag ):
 
-        self._cfg = cfg
+        self._cfg = config( cfg_fname, tag )
 
         self.timesteps = self._cfg.params['timesteps']
         self.batch_size = self._cfg.params['batch_size']
         self.image_size = self._cfg.params['image_size']
 
-        self.dataset = datasets['cifar10']('../data', image_size=self.image_size)
+        self.dataset = datasets['stanfordcars']('../data', image_size=self.image_size)
 
         use_cuda = torch.cuda.is_available()
         device_name = "cuda" if use_cuda else "cpu"
         self.device = torch.device( device_name )
 
     def build_batches( self ):
-
         self.diffusion_tools = DiffusionTools(num_steps=self.timesteps, img_size=self.image_size)
         transform = DiffusionTransform( self.diffusion_tools )
         self.batches = BatchGenerator( self.dataset.dataset, self.batch_size, transform=transform, randomize=True )
 
     def load_model( self ):
         self.model = {}
-        self.model['unet'] = model.UNet().to(self.device)
+        self.model['unet'] = model.UNet( num_classes=self.dataset.num_classes ).to(self.device)
         self.model['loss'] = model.Loss().to(self.device)
 
     def do_stuff( self ):
         x_noisy, noise, t, y = self.batches[10]
-        
-        pred_noise = self.model['unet']( x_noisy, t )
+
+        pred_noise = self.model['unet']( x_noisy, t, y )
         loss = self.model['loss']( pred_noise, noise.detach() )
 
         print( loss )
@@ -71,7 +70,10 @@ class module :
 
                 optimizer.zero_grad()
 
-                pred_noise = self.model['unet']( x_noisy, t )
+                if np.random.random() < 0.1:
+                    y = None
+
+                pred_noise = self.model['unet']( x_noisy, t, y )
                 loss = self.model['loss']( pred_noise, noise.detach() )
 
                 loss_values.append( loss.item() )
@@ -90,9 +92,7 @@ class module :
 
 
 if __name__=="__main__" :
-    cfg = config('config.yaml','20221125')
-    
-    m = module( cfg )
+    m = module('config.yaml','20221125')
     m.build_batches()
     m.load_model()
     m.train(num_epoch=300)

@@ -100,7 +100,7 @@ class SimpleUnet(nn.Module):
         return self.output(x)
 
 class UNet( nn.Module ):
-    def __init__( self, channels_in=3, channels_out=3, time_dim=256 ):
+    def __init__( self, channels_in=3, channels_out=3, time_dim=256, num_classes=None ):
         super().__init__()
 
         # 
@@ -128,8 +128,15 @@ class UNet( nn.Module ):
         self.sa6 = layers.SelfAttention(64,64)
         self.outc = nn.Conv2d(64,channels_out,kernel_size=1)
 
-    def forward( self, x, t ):
+        if num_classes is not None:
+            self.label_emb = nn.Embedding(num_classes, time_dim)
+
+    def forward( self, x, t, y = None ):
         t = self.time_embedding(t)
+
+        if y is not None:
+            t += self.label_emb(y)
+
         x1 = self.inc(x)
         x2 = self.down1(x1,t)
         x2 = self.sa1(x2)
