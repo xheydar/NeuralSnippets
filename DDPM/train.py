@@ -1,5 +1,6 @@
 import init
 
+import sys
 import os
 
 import torch
@@ -92,7 +93,7 @@ class module :
 
 
 if __name__=="__main__" :
-    m = module('config.yaml','20221125')
+    m = module('config.yaml',sys.argv[1])
     m.build_batches()
     m.load_model()
     m.train(num_epoch=300)
