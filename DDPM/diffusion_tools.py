@@ -38,8 +38,6 @@ class DiffusionTools :
         return sqrt_alpha_hat * x + sqrt_one_minus_alpha_hat * noise, noise
 
     def sample( self, model, n, labels, cfg_scale=3 ):
-
-
         #model.eval()
 
         out = []
@@ -53,7 +51,7 @@ class DiffusionTools :
             for i in reversed(range(1,self.num_steps)) :
                 print( i )
                 t = (torch.ones(n) * i).long().to(self.device)
-                predicted_noise = model(x, t)
+                predicted_noise = model(x, t, labels)
                 if cfg_scale > 0:
                     uncond_predicted_noise = model(x, t)
                     predicted_noise = torch.lerp(uncond_predicted_noise, predicted_noise, cfg_scale)

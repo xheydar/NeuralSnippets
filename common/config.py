@@ -25,6 +25,7 @@ class config :
             self.save_snapshots = True
 
         self.model_path = os.path.join( self.data_root, cfg['templates']['model'] )
+        self.ema_model_path = os.path.join( self.data_root, cfg['templates']['ema_model'])
         self.snapshots_tmp = os.path.join( self.data_root, cfg['templates']['snapshots'] )
 
         self.params = cfg['params']

@@ -26,7 +26,7 @@ class module :
         self.batch_size = self._cfg.params['batch_size']
         self.image_size = self._cfg.params['image_size']
 
-        #self.dataset = datasets['cifar10']('../data', image_size=self.image_size)
+        self.dataset = datasets['stanfordcars']('../data', image_size=self.image_size)
 
         use_cuda = torch.cuda.is_available()
         device_name = "cuda" if use_cuda else "cpu"
@@ -36,14 +36,16 @@ class module :
 
     def load_model( self ):
         self.model = {}
-        self.model['unet'] = model.UNet().to(self.device)
+        self.model['unet'] = model.UNet( num_classes=self.dataset.num_classes ).to(self.device)
         self.model['loss'] = model.Loss().to(self.device)
 
         model_data = torch.load( self._cfg.model_path, map_location='cpu' )
         self.model['unet'].load_state_dict( model_data['state_dict'], strict=True )
 
     def calculate( self ):
-        self.out = self.diffusion_tools.sample( self.model['unet'], 1, None )
+        labels = np.array([64], dtype=np.int64 )
+        labels = torch.from_numpy(labels)
+        self.out = self.diffusion_tools.sample( self.model['unet'], 1, labels )
 
     def do_stuff( self ):
 

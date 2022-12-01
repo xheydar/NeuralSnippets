@@ -2,6 +2,7 @@ import init
 
 import sys
 import os
+import copy
 
 import torch
 import numpy as np
@@ -19,6 +20,35 @@ from config import config
 
 from matplotlib import pyplot as pp
 pp.ion()
+
+
+class EMA:
+    def __init__(self, beta):
+        super().__init__()
+        self.beta = beta
+        self.step = 0
+
+    def update_model_average(self, ma_model, current_model):
+        for current_params, ma_params in zip(current_model.parameters(), ma_model.parameters()):
+            old_weight, up_weight = ma_params.data, current_params.data
+            ma_params.data = self.update_average(old_weight, up_weight)
+
+    def update_average(self, old, new):
+        if old is None:
+            return new
+        return old * self.beta + (1 - self.beta) * new
+
+    def step_ema(self, ema_model, model, step_start_ema=2000):
+        if self.step < step_start_ema:
+            self.reset_parameters(ema_model, model)
+            self.step += 1
+            return
+        self.update_model_average(ema_model, model)
+        self.step += 1
+
+    def reset_parameters(self, ema_model, model):
+        ema_model.load_state_dict(model.state_dict())
+
 
 class module :
     def __init__( self, cfg_fname, tag ):
@@ -60,6 +90,9 @@ class module :
         if not os.path.exists('./snapshots') : 
             os.makedirs('./snapshots')
 
+        ema = EMA(0.995)
+        ema_model = copy.deepcopy(self.model['unet']).eval().requires_grad_(False)
+
         for epoch in range(num_epoch):
             print("Epoch : %d/%d" % ( epoch+1, num_epoch ) )
             loss_values = []
@@ -81,6 +114,7 @@ class module :
 
                 loss.backward()
                 optimizer.step()
+                ema.step_ema(ema_model, self.model['unet'])
 
             print( np.mean(loss_values) )
 
@@ -90,6 +124,9 @@ class module :
 
         state_dict = self.model['unet'].state_dict()
         torch.save({'state_dict':state_dict}, self._cfg.model_path )
+
+        state_dict = ema_model.state_dict()
+        torch.save({'state_dict':state_dict}, self._cfg.ema_model_path )
 
 
 if __name__=="__main__" :
