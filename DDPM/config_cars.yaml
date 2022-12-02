@@ -7,7 +7,7 @@ project: snippets
 templates:
   model: 'model.pt'
   ema_model: 'ema_model.pt'
-  snapshots: 'snapshots/model_snapshot_%d.pt'
+  #snapshots: 'snapshots/model_snapshot_%d.pt'
 
 params :
   timesteps: 300

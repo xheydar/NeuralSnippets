@@ -89,6 +89,8 @@ class module :
 
         print( loss )
 
+    def save_model( path)
+
     def train( self, num_epoch=100 ):
         optimizer = optim.Adam(self.model['net'].parameters(), lr=0.001)
         dataloader = torch.utils.data.DataLoader( self.batches, batch_size=None, num_workers=8 )
