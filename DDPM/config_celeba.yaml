@@ -17,6 +17,7 @@ params :
 save_snapshots: false
 transform: 'dt_att'
 dataset: 'celeba' 
+  
 model : 
   name: 'unet_att'
   params :

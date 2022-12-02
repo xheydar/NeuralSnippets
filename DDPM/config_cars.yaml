@@ -17,4 +17,8 @@ params :
 save_snapshots: false
 transform: 'dt_cls'
 dataset: 'stanfordcars' 
-model : 'unet_cls'
+  
+model : 
+  name: 'unet_att'
+  params :
+    num_classes: 196
