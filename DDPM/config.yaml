@@ -12,4 +12,4 @@ templates:
 params :
   timesteps: 300
   batch_size: 64
-  image_size: 64
+  image_size: 128

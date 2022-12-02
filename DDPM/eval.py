@@ -39,11 +39,11 @@ class module :
         self.model['unet'] = model.UNet( num_classes=self.dataset.num_classes ).to(self.device)
         self.model['loss'] = model.Loss().to(self.device)
 
-        model_data = torch.load( self._cfg.model_path, map_location='cpu' )
+        model_data = torch.load( self._cfg.ema_model_path, map_location='cpu' )
         self.model['unet'].load_state_dict( model_data['state_dict'], strict=True )
 
     def calculate( self ):
-        labels = np.array([64], dtype=np.int64 )
+        labels = np.array([2], dtype=np.int64 )
         labels = torch.from_numpy(labels)
         self.out = self.diffusion_tools.sample( self.model['unet'], 1, labels )
 
@@ -51,4 +51,5 @@ class module :
 
         self.diffusion_tools.sample( self.model['unet'], 1, None )
 
+        
         
