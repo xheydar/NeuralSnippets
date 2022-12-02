@@ -79,7 +79,7 @@ class module :
         self.model['net'] = models[self.cfg.model]( num_classes=self.dataset.num_classes ).to(self.device)
         self.model['loss'] = models['loss']().to(self.device)
 
-        #self.model['net'] = nn.DataParallel(self.model['net'])
+        self.model['net'] = nn.DataParallel(self.model['net'])
 
     def do_stuff( self ):
         x_noisy, noise, t, y = self.batches[10]
