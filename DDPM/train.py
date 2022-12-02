@@ -113,14 +113,14 @@ class module :
                 if np.random.random() < 0.1:
                     y = None
 
-                pred_noise = self.model['unet']( x_noisy, t, y )
+                pred_noise = self.model['net']( x_noisy, t, y )
                 loss = self.model['loss']( pred_noise, noise.detach() )
 
                 loss_values.append( loss.item() )
 
                 loss.backward()
                 optimizer.step()
-                ema.step_ema(ema_model, self.model['unet'])
+                ema.step_ema(ema_model, self.model['net'])
 
             print( np.mean(loss_values) )
 
