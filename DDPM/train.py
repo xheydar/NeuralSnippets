@@ -87,10 +87,14 @@ class module :
         pred_noise = self.model['net']( x_noisy, t, y )
         loss = self.model['loss']( pred_noise, noise.detach() )
 
-        print( loss )
+    def save_model( self, model, path ):
+        try :
+            state_dict = model.module.state_dict()
+        except AttributeError:
+            state_dict = model.state_dict()
 
-    def save_model( path)
-
+        torch.save({'state_dict':state_dict}, path )
+        
     def train( self, num_epoch=100 ):
         optimizer = optim.Adam(self.model['net'].parameters(), lr=0.001)
         dataloader = torch.utils.data.DataLoader( self.batches, batch_size=None, num_workers=8 )
@@ -127,15 +131,10 @@ class module :
             print( np.mean(loss_values) )
 
             if self._cfg.save_snapshots :
-                state_dict = self.model['unet'].state_dict()
-                torch.save({'state_dict':state_dict}, self._cfg.snapshots_tmp % (epoch+1))
+                self.save_model( self.model['net'], self._cfg.snapshots_tmp % (epoch+1))
 
-        state_dict = self.model['unet'].state_dict()
-        torch.save({'state_dict':state_dict}, self._cfg.model_path )
-
-        state_dict = ema_model.state_dict()
-        torch.save({'state_dict':state_dict}, self._cfg.ema_model_path )
-
+        self.save_model( self.model['net'], self._cfg.model_path )
+        self.save_model( ema_model, self._cfg.ema_model_path )
 
 if __name__=="__main__" :
     m = module(sys.argv[1],sys.argv[2])
