@@ -1,6 +1,6 @@
 import torch
 
-class DiffusionTransform :
+class DiffusionTransformCls :
     def __init__( self, diffusion_tools ):
         self.diffusion_tools = diffusion_tools
 

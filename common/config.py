@@ -29,3 +29,7 @@ class config :
         self.snapshots_tmp = os.path.join( self.data_root, cfg['templates']['snapshots'] )
 
         self.params = cfg['params']
+
+        self.transform = cfg['transform']
+        self.dataset = cfg['dataset']
+        self.model = cfg['model']

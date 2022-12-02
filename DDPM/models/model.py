@@ -99,7 +99,7 @@ class SimpleUnet(nn.Module):
             x = up(x, t)
         return self.output(x)
 
-class UNet( nn.Module ):
+class UNetCls( nn.Module ):
     def __init__( self, channels_in=3, channels_out=3, time_dim=256, num_classes=None ):
         super().__init__()
 
