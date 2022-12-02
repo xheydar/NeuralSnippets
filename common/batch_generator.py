@@ -32,10 +32,6 @@ class BatchGenerator :
             data.append( X )
             labels.append( Y )
 
-
-        data = torch.cat( data, dim=0 )
-        labels = torch.IntTensor( labels ) 
-
         return self.transform( data, labels )
 
 

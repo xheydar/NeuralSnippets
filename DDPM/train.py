@@ -18,41 +18,13 @@ from batch_generator import BatchGenerator
 from models import models
 from transforms import transforms
 from config import config
+from misc import EMA
 
 from matplotlib import pyplot as pp
 pp.ion()
 
-
-class EMA:
-    def __init__(self, beta):
-        super().__init__()
-        self.beta = beta
-        self.step = 0
-
-    def update_model_average(self, ma_model, current_model):
-        for current_params, ma_params in zip(current_model.parameters(), ma_model.parameters()):
-            old_weight, up_weight = ma_params.data, current_params.data
-            ma_params.data = self.update_average(old_weight, up_weight)
-
-    def update_average(self, old, new):
-        if old is None:
-            return new
-        return old * self.beta + (1 - self.beta) * new
-
-    def step_ema(self, ema_model, model, step_start_ema=2000):
-        if self.step < step_start_ema:
-            self.reset_parameters(ema_model, model)
-            self.step += 1
-            return
-        self.update_model_average(ema_model, model)
-        self.step += 1
-
-    def reset_parameters(self, ema_model, model):
-        ema_model.load_state_dict(model.state_dict())
-
 class module :
     def __init__( self, cfg_fname, tag ):
-
         self.cfg = config( cfg_fname, tag )
 
         self.timesteps = self.cfg.params['timesteps']
@@ -64,11 +36,7 @@ class module :
         use_cuda = torch.cuda.is_available()
         device_name = "cuda" if use_cuda else "cpu"
         self.device = torch.device( device_name )
-
-    def dev_test( self ):
-        print( self.dataset.dataset[0] )
-
-
+ 
     def build_batches( self ):
         self.diffusion_tools = DiffusionTools(num_steps=self.timesteps, img_size=self.image_size)
         transform = transforms[self.cfg.transform]( self.diffusion_tools )
@@ -76,16 +44,27 @@ class module :
 
     def load_model( self ):
         self.model = {}
-        self.model['net'] = models[self.cfg.model]( num_classes=self.dataset.num_classes ).to(self.device)
+        self.model['net'] = models[self.cfg.model['name']]( **self.cfg.model['params'] ).to(self.device)
         self.model['loss'] = models['loss']().to(self.device)
 
         self.model['net'] = nn.DataParallel(self.model['net'])
+
+    def dev_test( self ):
+        x_noisy, noise, t, y = self.batches[10]
+
+        pred_noise = self.model['net']( x_noisy, t, y )
+
+        print( pred_noise.shape )
+
 
     def do_stuff( self ):
         x_noisy, noise, t, y = self.batches[10]
 
         pred_noise = self.model['net']( x_noisy, t, y )
         loss = self.model['loss']( pred_noise, noise.detach() )
+
+        print( loss )
+
 
     def save_model( self, model, path ):
         try :

@@ -13,3 +13,12 @@ params :
   timesteps: 300
   batch_size: 32
   image_size: 128
+
+save_snapshots: false
+transform: 'dt_att'
+dataset: 'celeba' 
+model : 
+  name: 'unet_att'
+  params :
+    num_attributes: 40
+

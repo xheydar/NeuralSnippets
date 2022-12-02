@@ -159,6 +159,66 @@ class UNetCls( nn.Module ):
 
         return x
 
+class UNetAtt( nn.Module ):
+    def __init__( self, channels_in=3, channels_out=3, time_dim=256, num_attributes=None ):
+        super().__init__()
+
+        self.time_embedding = layers.SinusoidalPositionEmbeddings( time_dim )
+        self.inc = layers.DoubleConv( channels_in, 64 )
+        self.down1 = layers.Down(64, 128)
+        self.sa1 = layers.SelfAttention(128,32)
+        self.down2 = layers.Down(128,256)
+        self.sa2 = layers.SelfAttention(256,16)
+        self.down3 = layers.Down(256,256)
+        self.sa3 = layers.SelfAttention(256,8)
+
+        # Bottleneck
+
+        self.bot1 = layers.DoubleConv(256,512)
+        self.bot2 = layers.DoubleConv(512,512)
+        self.bot3 = layers.DoubleConv(512,256)
+
+        self.up1 = layers.Up(512,128)
+        self.sa4 = layers.SelfAttention(128,16)
+        self.up2 = layers.Up(256,64)
+        self.sa5 = layers.SelfAttention(64,32)
+        self.up3 = layers.Up(128,64)
+        self.sa6 = layers.SelfAttention(64,64)
+        self.outc = nn.Conv2d(64,channels_out,kernel_size=1)
+
+        if num_attributes is not None:
+            self.att_emb = nn.Sequential( nn.Linear( num_attributes, time_dim ),
+                                          nn.ReLU()
+                                        )
+
+    def forward( self, x, t, a = None ):
+        t = self.time_embedding(t)
+
+        if a is not None:
+            t += self.att_emb(a)
+
+        x1 = self.inc(x)
+        x2 = self.down1(x1,t)
+        x2 = self.sa1(x2)
+        x3 = self.down2(x2,t)
+        x3 = self.sa2(x3)
+        x4 = self.down3(x3,t)
+        x4 = self.sa3(x4)
+
+        x4 = self.bot1(x4)
+        x4 = self.bot2(x4)
+        x4 = self.bot3(x4)
+
+        x = self.up1( x4, x3, t )
+        x = self.sa4(x)
+        x = self.up2( x, x2, t )
+        x = self.sa5(x)
+        x = self.up3( x, x1, t )
+        x = self.sa6(x)
+        x = self.outc(x)
+
+        return x
+
 class Loss( nn.Module ):
     def __init__( self ):
         super().__init__()

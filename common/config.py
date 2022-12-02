@@ -14,7 +14,7 @@ class config :
             cfg = yaml.safe_load( ff )
 
         data_root = cfg['data_root'][platform.system()]
-        project = cfg['project']
+        project = cfg['project'] + "/" + cfg['dataset']
 
         self.data_root = os.path.join( data_root, project, basename, tag )
         self._make_dir( self.data_root )
