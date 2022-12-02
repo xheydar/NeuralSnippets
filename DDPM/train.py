@@ -130,11 +130,11 @@ class module :
 
             print( np.mean(loss_values) )
 
-            if self._cfg.save_snapshots :
-                self.save_model( self.model['net'], self._cfg.snapshots_tmp % (epoch+1))
+            if self.cfg.save_snapshots :
+                self.save_model( self.model['net'], self.cfg.snapshots_tmp % (epoch+1))
 
-        self.save_model( self.model['net'], self._cfg.model_path )
-        self.save_model( ema_model, self._cfg.ema_model_path )
+        self.save_model( self.model['net'], self.cfg.model_path )
+        self.save_model( ema_model, self.cfg.ema_model_path )
 
 if __name__=="__main__" :
     m = module(sys.argv[1],sys.argv[2])
