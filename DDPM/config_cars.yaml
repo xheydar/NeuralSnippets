@@ -19,6 +19,6 @@ transform: 'dt_cls'
 dataset: 'stanfordcars' 
   
 model : 
-  name: 'unet_att'
+  name: 'unet_cls'
   params :
     num_classes: 196
