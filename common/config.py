@@ -22,7 +22,8 @@ class config :
         self.save_snapshots = False
         if 'snapshots' in cfg['templates'] :
             self._make_dir( os.path.join( self.data_root, 'snapshots')  )
-            self.save_snapshots = True
+
+        self.save_snapshots = cfg['save_snapshots']
 
         self.model_path = os.path.join( self.data_root, cfg['templates']['model'] )
         self.ema_model_path = os.path.join( self.data_root, cfg['templates']['ema_model'])
