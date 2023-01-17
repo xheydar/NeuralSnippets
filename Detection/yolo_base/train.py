@@ -195,6 +195,7 @@ class Train :
         self.model['params'] = {}
         self.model['params']= gs
         self.model['nl'] = nl
+        self.model['accumulate'] = accumulate
 
     def train( self ):
 
@@ -205,7 +206,10 @@ class Train :
         model = self.model['model']
         scheduler = self.model['scheduler']
         optimizer = self.model['optimizer']
+        ema = self.model['ema']
+
         lf = self.model['lf']
+        accumulate = self.model['accumulate']
 
         nbs = 64  # nominal batch size
         nc = int(self.data_dict['nc'])
@@ -258,7 +262,7 @@ class Train :
                 # Forward
                 with amp.autocast(enabled=cuda):
                     pred = model(imgs)  # forward
-                    if 'loss_ota' not in hyp or hyp['loss_ota'] == 1:
+                    if 'loss_ota' not in self.hyp or self.hyp['loss_ota'] == 1:
                         loss, loss_items = compute_loss_ota(pred, targets.to(device), imgs)  # loss scaled by batch_size
                     else:
                         loss, loss_items = compute_loss(pred, targets.to(device))  # loss scaled by batch_size
@@ -266,6 +270,17 @@ class Train :
                         loss *= opt.world_size  # gradient averaged between devices in DDP mode
                     if opt.quad:
                         loss *= 4.
+                
+                # Backward
+                scaler.scale(loss).backward()
+
+                # Optimize
+                if ni % accumulate == 0:
+                    scaler.step(optimizer)  # optimizer.step
+                    scaler.update()
+                    optimizer.zero_grad()
+                    if ema:
+                        ema.update(model)
 
 
  
