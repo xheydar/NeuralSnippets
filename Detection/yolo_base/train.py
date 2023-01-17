@@ -286,8 +286,8 @@ def load():
         cfg.datasets_path = '/Users/heydar/Work/void/data/datasets'
     else :
         cfg.datasets_path = "/ssd/data/datasets"
-    cfg.data = 'data/coco.yml'
-    cfg.hyp = 'data/hyp.yml'
+    cfg.data = 'params/coco.yml'
+    cfg.hyp = 'params/hyp.yml'
     cfg.rank = -1
     cfg.img_size = {'train':640, 'val':640}
     cfg.batch_size = 16
