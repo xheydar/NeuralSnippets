@@ -239,7 +239,7 @@ class Train :
 
             for i, (imgs, targets, paths, _) in pbar:
                 ni = i + nb * epoch
-                imgs = imgs.to(device, non_blocking=True).float() / 255.0
+                imgs = imgs.to(self.device, non_blocking=True).float() / 255.0
 
                 print( imgs.shape )
 
