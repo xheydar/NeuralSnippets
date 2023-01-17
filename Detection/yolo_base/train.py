@@ -190,6 +190,7 @@ class Train :
         self.model['optimizer'] = optimizer
         self.model['scheduler'] = scheduler
         self.model['ema'] = ema
+        self.model['lf'] = lf
 
         self.model['params'] = {}
         self.model['params']= gs
@@ -204,6 +205,7 @@ class Train :
         model = self.model['model']
         scheduler = self.model['scheduler']
         optimizer = self.model['optimizer']
+        lf = self.model['lf']
 
         nbs = 64  # nominal batch size
         nc = int(self.data_dict['nc'])
