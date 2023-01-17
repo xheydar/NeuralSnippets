@@ -257,7 +257,7 @@ class Train :
                         # bias lr falls from 0.1 to lr0, all other lrs rise from 0.0 to lr0
                         x['lr'] = np.interp(ni, xi, [hyp['warmup_bias_lr'] if j == 2 else 0.0, x['initial_lr'] * lf(epoch)])
                         if 'momentum' in x:
-                            x['momentum'] = np.interp(ni, xi, [hyp['warmup_momentum'], hyp['momentum']])
+                            x['momentum'] = np.interp(ni, xi, [self.hyp['warmup_momentum'], self.hyp['momentum']])
  
     def do_stuff( self ):
         img, label, file, size, label_raw = self.datasets['val'][150] 
