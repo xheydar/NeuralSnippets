@@ -263,9 +263,9 @@ class Train :
                 with amp.autocast(enabled=cuda):
                     pred = model(imgs)  # forward
                     if 'loss_ota' not in self.hyp or self.hyp['loss_ota'] == 1:
-                        loss, loss_items = compute_loss_ota(pred, targets.to(device), imgs)  # loss scaled by batch_size
+                        loss, loss_items = compute_loss_ota(pred, targets.to(self.device), imgs)  # loss scaled by batch_size
                     else:
-                        loss, loss_items = compute_loss(pred, targets.to(device))  # loss scaled by batch_size
+                        loss, loss_items = compute_loss(pred, targets.to(self.device))  # loss scaled by batch_size
                     if rank != -1:
                         loss *= opt.world_size  # gradient averaged between devices in DDP mode
                     if opt.quad:
