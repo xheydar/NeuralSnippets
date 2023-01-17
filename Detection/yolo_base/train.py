@@ -18,7 +18,7 @@ from torch.cuda import amp
 import test
 
 from mine.datasets import create_dataloader
-from utils.general import labels_to_class_weights, labels_to_image_weights, init_seeds
+from utils.general import labels_to_class_weights, labels_to_image_weights, init_seeds, fitness
 from utils.autoanchor import check_anchors
 from utils.torch_utils import ModelEMA
 from utils.loss import ComputeLoss, ComputeLossOTA
@@ -204,6 +204,7 @@ class Train :
         cuda = self.device.type != 'cpu'
         dataloader = self.dataloaders['train']
         dataset = self.datasets['train']
+        testdataloader = self.dataloaders['val']
 
         model = self.model['model']
         scheduler = self.model['scheduler']
@@ -245,7 +246,7 @@ class Train :
             pbar = enumerate(dataloader)
             pbar = tqdm(pbar, total=nb)
 
-            for i, (imgs, targets, paths, _) in pbar:
+            for i, (imgs, targets, paths, _) in pbar: # batch -----
                 ni = i + nb * epoch
                 imgs = imgs.to(self.device, non_blocking=True).float() / 255.0
                 targets = targets.to(self.device)
@@ -291,6 +292,27 @@ class Train :
                     s = ('%10s' * 2 + '%10.4g' * 6) % (
                     '%g/%g' % (epoch, epochs - 1), mem, *mloss, targets.shape[0], imgs.shape[-1])
                     pbar.set_description(s)
+
+                # --- End Batch
+            # --- End epoch
+
+
+            # Scheduler
+            lr = [x['lr'] for x in optimizer.param_groups]  # for tensorboard
+            scheduler.step()
+
+            ema.update_attr(model, include=['yaml', 'nc', 'hyp', 'gr', 'names', 'stride', 'class_weights'])
+
+            results, maps, times = test.test( data_dict,
+                                              batch_size=batch_size * 2,
+                                              imgsz=self.cfg.img_size['val'],
+                                              model=ema.ema,
+                                              single_cls=False,
+                                              dataloader=testdataloader,
+                                              verbose=nc < 50 and final_epoch,
+                                              plots=False,
+                                              compute_loss=compute_loss,
+                                              is_coco=True)
 
 
  
