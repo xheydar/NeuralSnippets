@@ -288,7 +288,7 @@ def load():
     else :
         cfg.datasets_path = "/ssd/data/datasets"
 
-    print( cfd.datasets_path )
+    print( cfg.datasets_path )
     cfg.data = 'params/coco.yml'
     cfg.hyp = 'params/hyp.yml'
     cfg.rank = -1
