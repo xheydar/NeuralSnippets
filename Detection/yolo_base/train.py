@@ -234,8 +234,6 @@ class Train :
         for epoch in range(start_epoch, epochs):  # epoch ------------------------------------------------------------------
             model.train()
 
-            print( epoch )
-
             if self.cfg.image_weights :
                 cw = model.class_weights.cpu().numpy() * (1 - maps) ** 2 / nc
                 iw = labels_to_image_weights(dataset.labels, nc=nc, class_weights=cw)  # image weights
@@ -318,12 +316,11 @@ def load():
     else :
         cfg.datasets_path = "/ssd/data/datasets"
 
-    print( cfg.datasets_path )
     cfg.data = 'params/coco.yml'
     cfg.hyp = 'params/hyp.yml'
     cfg.rank = -1
     cfg.img_size = {'train':640, 'val':640}
-    cfg.batch_size = 16
+    cfg.batch_size = 8
     cfg.grid_stride = 32
     cfg.world_size = 1
     cfg.image_weights = True
