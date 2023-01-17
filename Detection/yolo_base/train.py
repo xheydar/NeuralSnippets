@@ -255,6 +255,19 @@ class Train :
                         x['lr'] = np.interp(ni, xi, [self.hyp['warmup_bias_lr'] if j == 2 else 0.0, x['initial_lr'] * lf(epoch)])
                         if 'momentum' in x:
                             x['momentum'] = np.interp(ni, xi, [self.hyp['warmup_momentum'], self.hyp['momentum']])
+                # Forward
+                with amp.autocast(enabled=cuda):
+                    pred = model(imgs)  # forward
+                    if 'loss_ota' not in hyp or hyp['loss_ota'] == 1:
+                        loss, loss_items = compute_loss_ota(pred, targets.to(device), imgs)  # loss scaled by batch_size
+                    else:
+                        loss, loss_items = compute_loss(pred, targets.to(device))  # loss scaled by batch_size
+                    if rank != -1:
+                        loss *= opt.world_size  # gradient averaged between devices in DDP mode
+                    if opt.quad:
+                        loss *= 4.
+
+
  
     def do_stuff( self ):
         img, label, file, size, label_raw = self.datasets['val'][150] 
