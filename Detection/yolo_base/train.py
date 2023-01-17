@@ -267,7 +267,7 @@ class Train :
                         loss, loss_items = compute_loss(pred, targets)  # loss scaled by batch_size
                     if self.cfg.rank != -1:
                         loss *= opt.world_size  # gradient averaged between devices in DDP mode
-                    if self.cfg.quad:
+                    if self.cfg.dataloader.quad:
                         loss *= 4.
                 
                 # Backward
