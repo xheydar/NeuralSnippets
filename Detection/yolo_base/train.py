@@ -316,3 +316,10 @@ def load():
     train = Train( cfg )
 
     return train
+
+if __name__=="__main__" :
+    t = load()
+    t.load_datasets()
+    t.load_model()
+
+    t.train()
