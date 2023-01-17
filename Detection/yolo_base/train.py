@@ -15,6 +15,8 @@ import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
 from torch.cuda import amp
 
+import test
+
 from mine.datasets import create_dataloader
 from utils.general import labels_to_class_weights, labels_to_image_weights, init_seeds
 from utils.autoanchor import check_anchors
