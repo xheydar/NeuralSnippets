@@ -204,6 +204,7 @@ class Train :
         model = self.model['model']
         scheduler = self.model['scheduler']
 
+        nbs = 64  # nominal batch size
         nc = int(self.data_dict['nc'])
         nb = len(dataloader)
 
