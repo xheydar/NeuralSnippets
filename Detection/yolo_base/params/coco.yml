@@ -7,7 +7,7 @@ train: "coco/train2017.txt"
 val: "coco/val2017.txt"
 test: "coco/test-dev2017.txt"
 
-cache: "coco/%s2027.cache"
+cache: "coco/%s2017.cache"
 
 nc: 80
 
