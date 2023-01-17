@@ -359,8 +359,6 @@ class LoadImagesAndLabels( Dataset ):
                 labels = pastein(img, labels, sample_labels, sample_images, sample_masks)
         
 
-        labels_raw = labels.copy()
-
         nL = len(labels)  # number of labels
         if nL:
             labels[:, 1:5] = xyxy2xywh(labels[:, 1:5])  # convert xyxy to xywh
@@ -388,7 +386,7 @@ class LoadImagesAndLabels( Dataset ):
         img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
         img = np.ascontiguousarray(img)
 
-        return torch.from_numpy(img), labels_out, self.img_files[index], shapes, labels_raw
+        return torch.from_numpy(img), labels_out, self.img_files[index], shapes
 
     @staticmethod
     def collate_fn(batch):
