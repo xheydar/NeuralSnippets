@@ -136,4 +136,4 @@ if __name__=="__main__" :
     t = train()
     t.load_dataset()
     t.load_model()
-    t.train()
+    t.train( nepoch=100 )
