@@ -30,7 +30,7 @@ class trainer :
             running_loss += float(loss)
             data_count += len(inputs)
 
-        print( "Average loss :", running_loss / data_count )
+        return running_loss / data_count
 
     def eval_step( self, test_loader ):
 
@@ -56,8 +56,7 @@ class trainer :
             corrects += len(inds)
             total += len(labels)
 
-        print("Eval acc : ", corrects / total)
-
+        return corrects / total
 
     def train( self, nepoch=10 ):
         train_loader = self.datasets['train'].get_loader( 16, True )
@@ -67,6 +66,8 @@ class trainer :
 
         for epoch in range( nepoch ):
 
-            self.train_step( train_loader, optimizer )
-            self.eval_step( test_loader )
+            print(f'Epoch {epoch+1}')
+            ave_loss = self.train_step( train_loader, optimizer )
+            acc = self.eval_step( test_loader )
+            print(f'Training average loss : {ave_loss} - Test accuracy : {acc}')
 
