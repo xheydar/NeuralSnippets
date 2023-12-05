@@ -1,6 +1,7 @@
 import torch 
 import torch.optim as optim
 from tqdm import tqdm
+import numpy as np
 
 class trainer :
     def __init__( self ):
