@@ -1,3 +1,6 @@
+import argparse
+import pickle
+
 import torch 
 import torchvision
 import numpy as np
@@ -59,16 +62,34 @@ class train(trainer) :
             inputs.append(t)
             labels.append(l)
 
-        inputs = torch.cat( inputs, dim=0 )
+        inputs = torch.cat( inputs, dim=0 ).to( self.device )
+        labels = torch.from_numpy( np.array(labels,dtype=np.int64 ) ).to( self.device )
 
         outputs = self.model['net']( inputs ) 
+        loss = self.model['loss']( outputs, labels )
 
         print( outputs.shape )
+        print( loss )
+
+        #print( outputs.shape )
         
+def parse_commandline():
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-t','--tag',help="Experiment tag", required=True)
+    parser.add_argument('-n','--nepoch',help="Number of epoches", default=100)
+    args = parser.parse_args()
+    return args
     
 
 if __name__=="__main__" :
+
+    args = parse_commandline()
+
     t = train()
     t.load_dataset()
     t.load_model()
-    t.train( nepoch=100 )
+    data = t.train( nepoch=int(args.nepoch) )
+
+    with open(f'results_{args.baseline}_nepoch_{args.nepoch}.pkl','wb') as ff :
+        pickle.dump( data, ff )

@@ -1,26 +1,20 @@
 import torch.nn as nn 
+import timm
 
 class Net( nn.Module ):
     def __init__( self ):
         super().__init__()
 
-        self.layers = nn.Sequential(
-                    nn.Conv2d(3,6,5),
-                    nn.ReLU(),
-                    nn.MaxPool2d(2,2),
-                    nn.Conv2d(6,16,5),
-                    nn.ReLU(),
-                    nn.MaxPool2d(2,2),
-                    nn.Flatten(1),
-                    nn.Linear(16 * 5 * 5, 120),
-                    nn.ReLU(),
-                    nn.Linear(120,84),
-                    nn.ReLU(),
-                    nn.Linear(84,10)
-                )
+        self.backbone = timm.create_model('resnet34', pretrained=False, features_only=True )
+        self.head = nn.Sequential (
+                nn.Flatten(),
+                nn.Linear(512,10)
+        )
 
     def forward( self, x ):
-        return self.layers(x)
+        x = self.backbone(x)[-1]
+        x = self.head(x)
+        return x
 
 class Loss( nn.Module ):
     def __init__( self ):

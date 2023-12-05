@@ -64,10 +64,21 @@ class trainer :
 
         optimizer = optim.SGD( self.model['net'].parameters(), lr=0.001, momentum=0.9)
 
+        train_loss = []
+        test_acc = []
+
         for epoch in range( nepoch ):
 
-            print(f'Epoch {epoch+1}')
+            print(f'Epoch {epoch+1}/{nepoch}')
             ave_loss = self.train_step( train_loader, optimizer )
             acc = self.eval_step( test_loader )
-            print(f'Training average loss : {ave_loss} - Test accuracy : {acc}')
+
+            train_loss.append( ave_loss )
+            test_acc.append( acc )
+
+        out = {}
+        out['train_loss'] = train_loss 
+        out['test_acc'] = test_acc 
+
+        return out
 
