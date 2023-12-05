@@ -91,5 +91,5 @@ if __name__=="__main__" :
     t.load_model()
     data = t.train( nepoch=int(args.nepoch) )
 
-    with open(f'results_{args.baseline}_nepoch_{args.nepoch}.pkl','wb') as ff :
+    with open(f'results_{args.tag}_nepoch_{args.nepoch}.pkl','wb') as ff :
         pickle.dump( data, ff )
