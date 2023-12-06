@@ -43,7 +43,7 @@ class trainer :
 
     def eval_step( self, test_loader, ema=None ):
 
-        if emal :
+        if ema :
             model = ema.ema 
         else :
             model = self.model['net']
