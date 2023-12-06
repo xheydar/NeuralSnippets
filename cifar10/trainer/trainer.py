@@ -33,7 +33,7 @@ class trainer :
             optimizer.step()
 
             if ema :
-                ema.update( self.model['train'] )
+                ema.update( self.model['net'] )
 
 
             running_loss += float(loss)
