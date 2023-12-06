@@ -92,5 +92,9 @@ if __name__=="__main__" :
     t.load_model()
     data = t.train( nepoch=int(args.nepoch) )
 
-    with open(f'results_{args.tag}.pkl','wb') as ff :
+    save_path = f'results/{args.tag}.pkl'
+
+    with open(save_path,'wb') as ff :
         pickle.dump( data, ff )
+
+    print( "Saved to %s" % (save_path) )
