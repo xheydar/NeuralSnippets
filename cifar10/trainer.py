@@ -2,6 +2,7 @@ import torch
 import torch.optim as optim
 from tqdm import tqdm
 import numpy as np
+from copy import deepcopy
 
 class ModelEMA:
     """ Updated Exponential Moving Average (EMA) from https://github.com/rwightman/pytorch-image-models
