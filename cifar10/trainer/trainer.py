@@ -41,7 +41,7 @@ class trainer :
 
         return running_loss / data_count
 
-    def eval_step( self, test_loader, ema ):
+    def eval_step( self, test_loader, ema=None ):
 
         if emal :
             model = ema.ema 
@@ -89,8 +89,8 @@ class trainer :
         for epoch in range( nepoch ):
 
             print(f'Epoch {epoch+1}/{nepoch}')
-            ave_loss = self.train_step( train_loader, optimizer )
-            acc = self.eval_step( test_loader )
+            ave_loss = self.train_step( train_loader, optimizer, ema )
+            acc = self.eval_step( test_loader, ema )
 
             train_loss.append( ave_loss )
             test_acc.append( acc )
