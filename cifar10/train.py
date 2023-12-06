@@ -15,6 +15,7 @@ from dataset import dataset
 import model
 
 from trainer import trainer
+from matplotlib import pyplot as pp 
 
 cfg = edict()
 cfg.dataset = edict();
@@ -77,7 +78,7 @@ def parse_commandline():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-t','--tag',help="Experiment tag", required=True)
-    parser.add_argument('-n','--nepoch',help="Number of epoches", default=100)
+    parser.add_argument('-n','--nepoch',help="Number of epoches", default=100, type=int)
     args = parser.parse_args()
     return args
     
@@ -91,5 +92,5 @@ if __name__=="__main__" :
     t.load_model()
     data = t.train( nepoch=int(args.nepoch) )
 
-    with open(f'results_{args.tag}_nepoch_{args.nepoch}.pkl','wb') as ff :
+    with open(f'results_{args.tag}.pkl','wb') as ff :
         pickle.dump( data, ff )
