@@ -15,7 +15,6 @@ from dataset import dataset
 import model
 
 from trainer import trainer
-from matplotlib import pyplot as pp 
 
 cfg = edict()
 cfg.dataset = edict();
