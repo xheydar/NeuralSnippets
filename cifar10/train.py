@@ -78,6 +78,7 @@ def parse_commandline():
     parser = argparse.ArgumentParser()
     parser.add_argument('-t','--tag',help="Experiment tag", required=True)
     parser.add_argument('-n','--nepoch',help="Number of epoches", default=100, type=int)
+    parser.add_argument('--ema', help="User EMA", action='store_true', default=False )
     args = parser.parse_args()
     return args
     
@@ -89,7 +90,7 @@ if __name__=="__main__" :
     t = train()
     t.load_dataset()
     t.load_model()
-    data = t.train( nepoch=int(args.nepoch) )
+    data = t.train( nepoch=int(args.nepoch), use_ema=args.ema )
 
     save_path = f'results/{args.tag}.pkl'
 

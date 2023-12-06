@@ -6,7 +6,7 @@ pp.ion()
 class plotter :
     def __init__( self, tag ):
         
-        data_path = 'results_%s.pkl' % ( tag )
+        data_path = 'results/%s.pkl' % ( tag )
 
         with open( data_path, 'rb') as ff :
             data = pickle.load(ff)
