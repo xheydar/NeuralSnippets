@@ -119,6 +119,7 @@ class trainer :
         if api :
             api.reset()
             api.add_cfg('nepoch', nepoch)
+            api.add_cfg('keys', ['train_loss', 'test_acc'])
             api.send('init')
 
         for epoch in range( nepoch ):
