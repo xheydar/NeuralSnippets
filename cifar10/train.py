@@ -8,6 +8,7 @@ import platform
 import torchvision.transforms as transforms
 import torch.optim as optim
 from tqdm import tqdm
+import yaml
 
 from easydict import EasyDict as edict
 
@@ -15,6 +16,9 @@ from dataset import dataset
 import model
 
 from trainer import trainer
+import tools
+
+from api import api
 
 cfg = edict()
 cfg.dataset = edict();
@@ -87,10 +91,16 @@ if __name__=="__main__" :
 
     args = parse_commandline()
 
+    #params = tools.yaml_loader('params.yaml')
+    #print( params )
+
+    a = api('http://localhost:3000/api/logs/update-experiment/',
+            'GXQQKGRCWJJZZXHXWKFZ58146121440521543420')
+
     t = train()
     t.load_dataset()
     t.load_model()
-    data = t.train( nepoch=int(args.nepoch), use_ema=args.ema )
+    data = t.train( nepoch=int(args.nepoch), use_ema=args.ema, api=a )
 
     save_path = f'results/{args.tag}.pkl'
 

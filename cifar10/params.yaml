@@ -1,0 +1,11 @@
+
+api :
+  uri: 'http://localhost:3000/api/logs/update-experiment/' 
+  key: 'UEVNIYDOITPQGPXZFHPS29959808541554486079' 
+
+trainer :
+  lr: 0.001
+  momentum: 0.9
+  weight_decay: 1e-5
+  use_ema: true
+  batch_size: 16

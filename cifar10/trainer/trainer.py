@@ -8,8 +8,8 @@ from copy import deepcopy
 from .ema import ModelEMA
 
 class trainer :
-    def __init__( self ):
-        pass
+    def __init__( self, params ):
+        self.params = params
 
     def get_optimizer( self, name='SGD', lr=0.001, momentum=0.9, decay=1e-5 ): 
         g = [], [], []  # optimizer parameter groups
@@ -102,7 +102,7 @@ class trainer :
 
         return corrects / total
 
-    def train( self, nepoch=10, use_ema=True ):
+    def train( self, nepoch=10, use_ema=True, api=None ):
         train_loader = self.datasets['train'].get_loader( 16, True )
         test_loader = self.datasets['test'].get_loader( 16, False )
 
@@ -116,6 +116,11 @@ class trainer :
         else :
             ema = None
 
+        if api :
+            api.reset()
+            api.add_cfg('nepoch', nepoch)
+            api.send('init')
+
         for epoch in range( nepoch ):
 
             print(f'Epoch {epoch+1}/{nepoch}')
@@ -124,6 +129,14 @@ class trainer :
 
             train_loss.append( ave_loss )
             test_acc.append( acc )
+
+            if api :
+                api.add_item( {'train_loss': ave_loss, 'test_acc': acc, 'epoch': epoch })
+                api.send('running')
+
+        if api :
+            api.send('done')
+            
 
         out = {}
         out['train_loss'] = train_loss 
