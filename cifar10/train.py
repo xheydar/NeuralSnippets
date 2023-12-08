@@ -95,7 +95,7 @@ if __name__=="__main__" :
     print( params )
 
     if args.api :
-        a = api('%s/api/logs/update-experiment/' % (params['api']['sever']), args.api)
+        a = api('%s/api/logs/update-experiment/' % (params['api']['server']), args.api)
     else :
         a = None
 
