@@ -5,7 +5,7 @@ api:
 trainer:
   optimizer :
     name: 'SGD'
-    lr: 0.005
+    lr: 0.01
     momentum: 0.9
     decay: 1e-5
   nepoch: 100
