@@ -94,8 +94,8 @@ if __name__=="__main__" :
     #params = tools.yaml_loader('params.yaml')
     #print( params )
 
-    a = api('http://localhost:3000/api/logs/update-experiment/',
-            'GXQQKGRCWJJZZXHXWKFZ58146121440521543420')
+    a = api('http://10.8.1.2:3000/api/logs/update-experiment/',
+            'L8FX1wg70BEzzZQ9UtiJ')
 
     t = train()
     t.load_dataset()

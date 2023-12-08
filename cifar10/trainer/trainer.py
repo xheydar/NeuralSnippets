@@ -120,7 +120,7 @@ class trainer :
             api.reset()
             api.add_cfg('nepoch', nepoch)
             api.add_cfg('keys', ['train_loss', 'test_acc'])
-            api.send('init')
+            api.send('started')
 
         for epoch in range( nepoch ):
 
@@ -132,12 +132,8 @@ class trainer :
             test_acc.append( acc )
 
             if api :
-                api.add_item( {'train_loss': ave_loss, 'test_acc': acc, 'epoch': epoch })
-                api.send('running')
-
-        if api :
-            api.send('done')
-            
+                api.add_item({'train_loss': ave_loss, 'test_acc': acc, 'epoch': epoch})
+                api.send('running' if epoch < nepoch-1 else 'done' )
 
         out = {}
         out['train_loss'] = train_loss 

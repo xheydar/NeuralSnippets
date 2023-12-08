@@ -2,12 +2,19 @@ import requests
 import json
 import threading
 import copy
+import datetime
 
 def send_background( uri, data ):
+
+    print("Sending!")
+
+
     response = requests.post( uri, data=json.dumps(data) )
 
     if response.status_code != 200 :
         print('API Error : %s' % ( response.content ))
+    else :
+        print("Done!")
 
 class api :
     def __init__( self, uri, key ):
@@ -26,6 +33,7 @@ class api :
         self.cfg[name] = value
 
     def add_item( self, item ):
+        item['timestamp'] = datetime.datetime.now().strftime('%Y%m%d%H%M%S.%f')
         self.items.append( item )
         
 
@@ -45,5 +53,6 @@ class api :
 
         thread = threading.Thread( target=send_background, args=(self.uri, data))
         thread.start()
+        #send_background( self.uri, data )
 
 
