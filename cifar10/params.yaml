@@ -1,11 +1,10 @@
 
 api :
-  uri: 'http://localhost:3000/api/logs/update-experiment/' 
-  key: 'UEVNIYDOITPQGPXZFHPS29959808541554486079' 
+  uri: 'http://192.168.0.2:8080/api/logs/update-experiment/' 
 
 trainer :
   lr: 0.001
   momentum: 0.9
   weight_decay: 1e-5
-  use_ema: true
-  batch_size: 16
+  use_ema: false
+  batch_size: 64

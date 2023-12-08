@@ -92,15 +92,15 @@ if __name__=="__main__" :
 
     args = parse_commandline()
 
-    #params = tools.yaml_loader('params.yaml')
-    #print( params )
+    params = tools.yaml_loader('params.yaml')
+    print( params )
 
     server = 'http://192.168.0.2:8080'
     #server = "http://10.8.1.2:3000"
     
 
     if args.api :
-        a = api(server + '/api/logs/update-experiment/', args.api)
+        a = api('%s/api/logs/update-experiment/' % (params['api']['sever']), args.api)
     else :
         a = None
 
