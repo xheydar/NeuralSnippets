@@ -102,14 +102,16 @@ class trainer :
 
         return corrects / total
 
-    def train( self, nepoch=10, use_ema=True, api=None ):
-        train_loader = self.datasets['train'].get_loader( 16, True )
-        test_loader = self.datasets['test'].get_loader( 16, False )
+    def train( self, api=None ):
+        nepoch = self.params['trainer']['nepoch']
+        batch_size = self.params['trainer']['batch_size']
+        eval_batch_size_multiplier = self.params['trainer']['eval_batch_size_multiplier']
+        use_ema = self.params['trainer']['use_ema']
 
-        optimizer = self.get_optimizer('SGD', lr=0.001, momentum=0.9, decay=1e-5 )
+        train_loader = self.datasets['train'].get_loader( batch_size, True )
+        test_loader = self.datasets['test'].get_loader( batch_size * eval_batch_size_multiplier , False )
 
-        train_loss = []
-        test_acc = []
+        optimizer = self.get_optimizer( **self.params['trainer']['optimizer'] )
 
         if use_ema :
             ema = ModelEMA( self.model['net'] )
@@ -128,16 +130,6 @@ class trainer :
             ave_loss = self.train_step( train_loader, optimizer, ema )
             acc = self.eval_step( test_loader, ema )
 
-            train_loss.append( ave_loss )
-            test_acc.append( acc )
-
             if api :
                 api.add_item({'train_loss': ave_loss, 'test_acc': acc, 'epoch': epoch})
                 api.send('running' if epoch < nepoch-1 else 'done' )
-
-        out = {}
-        out['train_loss'] = train_loss 
-        out['test_acc'] = test_acc 
-
-        return out
-

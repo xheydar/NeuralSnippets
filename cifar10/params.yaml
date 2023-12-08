@@ -1,10 +1,14 @@
 
-api :
-  uri: 'http://192.168.0.2:8080/api/logs/update-experiment/' 
+api:
+  server: 'http://192.168.0.2:8080' 
 
-trainer :
-  lr: 0.001
-  momentum: 0.9
-  weight_decay: 1e-5
+trainer:
+  optimizer :
+    name: 'SGD'
+    lr: 0.001
+    momentum: 0.9
+    decay: 1e-5
+  nepoch: 100
   use_ema: false
   batch_size: 64
+  eval_batch_size_multiplier: 2
