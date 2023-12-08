@@ -83,6 +83,7 @@ def parse_commandline():
     parser.add_argument('-t','--tag',help="Experiment tag", required=True)
     parser.add_argument('-n','--nepoch',help="Number of epoches", default=100, type=int)
     parser.add_argument('--ema', help="User EMA", action='store_true', default=False )
+    parser.add_argument('--api', help="API Key", default=None)
     args = parser.parse_args()
     return args
     
@@ -94,8 +95,14 @@ if __name__=="__main__" :
     #params = tools.yaml_loader('params.yaml')
     #print( params )
 
-    a = api('http://10.8.1.2:3000/api/logs/update-experiment/',
-            'L8FX1wg70BEzzZQ9UtiJ')
+    server = 'http://192.168.0.2:8080'
+    #server = "http://10.8.1.2:3000"
+    
+
+    if args.api :
+        a = api(server + '/api/logs/update-experiment/', args.api)
+    else :
+        a = None
 
     t = train()
     t.load_dataset()

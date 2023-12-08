@@ -5,16 +5,10 @@ import copy
 import datetime
 
 def send_background( uri, data ):
-
-    print("Sending!")
-
-
     response = requests.post( uri, data=json.dumps(data) )
 
     if response.status_code != 200 :
         print('API Error : %s' % ( response.content ))
-    else :
-        print("Done!")
 
 class api :
     def __init__( self, uri, key ):
