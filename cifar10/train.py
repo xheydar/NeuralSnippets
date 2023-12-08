@@ -96,8 +96,8 @@ if __name__=="__main__" :
 
 if __name__=="__main__2":
 
-    a = api( params['uri']['api'],
-             'GXQQKGRCWJJZZXHXWKFZ58146121440521543420')
+    a = api( params['api']['uri']',
+             'L8FX1wg70BEzzZQ9UtiJ')
 
     t = train()
     t.load_dataset()
