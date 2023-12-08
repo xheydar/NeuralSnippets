@@ -91,11 +91,13 @@ if __name__=="__main__" :
 
     args = parse_commandline()
 
-    #params = tools.yaml_loader('params.yaml')
-    #print( params )
+    params = tools.yaml_loader('params.yaml')
+    print( params )
 
-    a = api('http://localhost:3000/api/logs/update-experiment/',
-            'GXQQKGRCWJJZZXHXWKFZ58146121440521543420')
+if __name__=="__main__2":
+
+    a = api( params['uri']['api'],
+             'GXQQKGRCWJJZZXHXWKFZ58146121440521543420')
 
     t = train()
     t.load_dataset()
