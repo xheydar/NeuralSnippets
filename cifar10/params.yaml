@@ -14,3 +14,6 @@ trainer:
   accumulate_batch_size: 256
   eval_batch_size_multiplier: 2
   lrf : 0.01
+  warmup_nepoch: 3
+  warmup_momentum: 0.8
+  warmup_bias_lr: 0.1

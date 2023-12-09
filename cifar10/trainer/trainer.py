@@ -53,6 +53,16 @@ class trainer :
         for idx, data in tqdm(enumerate( train_loader, 0 )):
             self.ni = idx + epoch_idx * self.nb
 
+            if self.ni < self.nw : 
+                xi = [0, self.nw]
+
+                self.accumulate = max(1, np.interp(self.ni, xi, [1, self.nbs/self.batch_size]).round())
+
+                for j,x in enumerate( optimizer.param_groups ):
+                    x['lr'] = np.interp( self.ni, xi, [ self.warmup_bias_lr if j == 0 else 0.0, x['initial_lr'] * self.lf(epoch_idx) ] )
+                    if 'momentum' in x :
+                        x['momentum'] = np.interp(self.ni,xi,[ self.warmup_momentum, self.optimizer_momentum ])
+
 
             inputs, labels = data 
 
@@ -120,6 +130,13 @@ class trainer :
         use_ema = self.params['trainer']['use_ema']
         lrf = self.params['trainer']['lrf']
 
+        # Warmup 
+        warmup_nepoch = self.params['trainer']['warmup_nepoch']
+        warmup_bias_lr = self.params['trainer']['warmup_bias_lr']
+        warmup_momentum = self.params['trainer']['warmup_momentum']
+
+        optimizer_momentum = self.params['trainer']['optimizer']['momentum']
+
         train_loader = self.datasets['train'].get_loader( batch_size, True )
         test_loader = self.datasets['test'].get_loader( batch_size * eval_batch_size_multiplier , False )
 
@@ -138,13 +155,18 @@ class trainer :
 
         self.ni = 0 
         self.nb = len(train_loader) 
+        self.nbs = accumulate_batch_size
         self.batch_size = batch_size 
         self.accumulate = accumulate_batch_size / batch_size
         self.last_opt_step = -1
 
+        self.nw = warmup_nepoch * self.nb
+        self.warmup_bias_lr = warmup_bias_lr 
+        self.warmup_momentum = warmup_momentum
+        self.optimizer_momentum = optimizer_momentum
 
-        lf = lambda x: (1 - x / nepoch) * (1.0 - lrf) + lrf  # linear
-        scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lf) 
+        self.lf = lambda x: (1 - x / nepoch) * (1.0 - lrf) + lrf  # linear
+        scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=self.lf) 
 
         for epoch in range( nepoch ):
 
