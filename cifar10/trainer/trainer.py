@@ -41,35 +41,45 @@ class trainer :
         #      f"{len(g[1])} weight(decay=0.0), {len(g[0])} weight(decay={decay}), {len(g[2])} bias")
         return optimizer
 
-    def train_step( self, train_loader, optimizer, ema=None ):
+    def train_step( self, epoch_idx, train_loader, optimizer, ema=None ):
 
         self.model['net'].train()
 
-        running_loss = 0.0
-        data_count = 0
+        mloss = 0.0
+
+        optimizer.zero_grad()
+
         for idx, data in tqdm(enumerate( train_loader, 0 )):
+            self.ni = idx + epoch_idx * self.nb
+
+
             inputs, labels = data 
 
             inputs = inputs.to( self.device )
             labels = labels.to( self.device )
 
-            optimizer.zero_grad()
+            #optimizer.zero_grad()
 
             outputs = self.model['net']( inputs )
 
             loss = self.model['loss']( outputs, labels )
 
             loss.backward()
-            optimizer.step()
 
-            if ema :
-                ema.update( self.model['net'] )
+            if self.ni - self.last_opt_step > self.accumulate :
+                torch.nn.utils.clip_grad_norm_( self.model['net'].parameters(), max_norm=10.0 )
+                optimizer.step()
+                optimizer.zero_grad()
+
+                if ema :
+                    ema.update( self.model['net'] )
+
+                self.last_opt_step = self.ni
 
 
-            running_loss += float(loss)
-            data_count += len(inputs)
+            mloss = ( mloss * idx + float(loss) ) / (idx + 1)
 
-        return running_loss / data_count
+        return mloss
 
     def eval_step( self, test_loader, ema=None ):
 
@@ -125,10 +135,16 @@ class trainer :
             api.add_cfg('keys', ['train_loss', 'test_acc'])
             api.send('started')
 
+        self.ni = 0 
+        self.nb = len(train_loader) 
+        self.batch_size = batch_size 
+        self.accumulate = accumulate_batch_size / batch_size
+        self.last_opt_step = -1
+
         for epoch in range( nepoch ):
 
             print(f'Epoch {epoch+1}/{nepoch}')
-            ave_loss = self.train_step( train_loader, optimizer, ema )
+            ave_loss = self.train_step( epoch, train_loader, optimizer, ema )
             acc = self.eval_step( test_loader, ema )
 
             if api :
