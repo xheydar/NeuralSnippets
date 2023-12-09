@@ -143,9 +143,9 @@ class trainer :
 
             print(f'Epoch {epoch+1}/{nepoch}')
 
-            epoch_data = {}
             ave_loss = self.train_step( epoch, train_loader, optimizer, ema )
-            epoch_data['train_loss'] = ave_loss 
+
+            epoch_data = {'train_loss':ave_loss, 'epoch':epoch}
 
             if validate :
                 val_data = validate( test_loader, ema.ema if ema else self.model['net'], self.device  )
