@@ -4,6 +4,7 @@ import torch.optim as optim
 from tqdm import tqdm
 import numpy as np
 from copy import deepcopy
+from torch.optim import lr_scheduler
 
 from .ema import ModelEMA
 
@@ -117,6 +118,7 @@ class trainer :
         accumulate_batch_size = self.params['trainer']['accumulate_batch_size']
         eval_batch_size_multiplier = self.params['trainer']['eval_batch_size_multiplier']
         use_ema = self.params['trainer']['use_ema']
+        lrf = self.params['trainer']['lrf']
 
         train_loader = self.datasets['train'].get_loader( batch_size, True )
         test_loader = self.datasets['test'].get_loader( batch_size * eval_batch_size_multiplier , False )
@@ -140,10 +142,17 @@ class trainer :
         self.accumulate = accumulate_batch_size / batch_size
         self.last_opt_step = -1
 
+
+        lf = lambda x: (1 - x / nepoch) * (1.0 - lrf) + lrf  # linear
+        scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lf) 
+
         for epoch in range( nepoch ):
 
             print(f'Epoch {epoch+1}/{nepoch}')
             ave_loss = self.train_step( epoch, train_loader, optimizer, ema )
+
+            scheduler.step()
+
             acc = self.eval_step( test_loader, ema )
 
             if api :
