@@ -45,7 +45,7 @@ class trainer :
         #      f"{len(g[1])} weight(decay=0.0), {len(g[0])} weight(decay={decay}), {len(g[2])} bias")
         return optimizer
 
-    def warmup_step( self, optimizer, ni ):
+    def warmup_step( self, optimizer, ni, epoch_idx ):
         xi = [0, self.nw]
     
         self.accumulate = max(1, np.interp(ni, xi, [1, self.nbs/self.batch_size]).round())
@@ -67,7 +67,7 @@ class trainer :
             ni = idx + epoch_idx * self.nb
 
             if ni < self.nw :
-                self.warmup_step( optimizer, ni )
+                self.warmup_step( optimizer, ni, epoch_idx )
     
             loss = self.loss( self.model, data, self.device )
             loss.backward()
