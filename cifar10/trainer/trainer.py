@@ -72,7 +72,7 @@ class trainer :
             loss = self.loss( self.model, data, self.device )
             loss.backward()
 
-            if self.ni - self.last_opt_step > self.accumulate :
+            if ni - self.last_opt_step > self.accumulate :
                 torch.nn.utils.clip_grad_norm_( self.model['net'].parameters(), max_norm=10.0 )
                 optimizer.step()
                 optimizer.zero_grad()
@@ -80,7 +80,7 @@ class trainer :
                 if ema :
                     ema.update( self.model['net'] )
 
-                self.last_opt_step = self.ni
+                self.last_opt_step = ni
 
             mloss = ( mloss * idx + float(loss) ) / (idx + 1)
 
