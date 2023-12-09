@@ -76,7 +76,6 @@ class trainer :
 
                 self.last_opt_step = self.ni
 
-
             mloss = ( mloss * idx + float(loss) ) / (idx + 1)
 
         return mloss
