@@ -1,4 +1,5 @@
 from copy import deepcopy
+from tqdm import tqdm
 
 class validate :
     def __init__( self ):
