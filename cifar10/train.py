@@ -18,8 +18,9 @@ import model
 from trainer import trainer
 import tools
 
-from api import api
+from api import api as notes_api
 from validate import validate
+from loss_calculator import loss_calculator
 
 cfg = edict()
 cfg.dataset = edict();
@@ -30,8 +31,8 @@ else :
     cfg.dataset.root = '/home/heydar/cache'
 
 class train(trainer) :
-    def __init__( self, params ):
-        super().__init__( params )
+    def __init__( self, params, api ):
+        super().__init__( params, loss_calculator(), validate(), api )
 
         if torch.cuda.is_available() :
             self.device = torch.device("cuda")
@@ -91,13 +92,16 @@ if __name__=="__main__" :
     params = tools.yaml_loader('params.yaml')
 
     if args.api :
-        a = api('%s/api/logs/update-experiment/' % (params['api']['server']), args.api)
+        api = notes_api('%s/api/logs/update-experiment/' % (params['api']['server']), args.api)
     else :
-        a = None
+        api = None
 
-    t = train( params )
     val = validate()
+    loss = loss_calculator()
+
+
+    t = train( params, api=api )
     t.load_dataset()
     t.load_model()
-    t.train( api=a, validate=val )
+    t.train()
 

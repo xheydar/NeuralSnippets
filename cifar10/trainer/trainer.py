@@ -9,8 +9,11 @@ from torch.optim import lr_scheduler
 from .ema import ModelEMA
 
 class trainer :
-    def __init__( self, params ):
+    def __init__( self, params, loss, validate=None, api=None ):
         self.params = params
+        self.loss = loss
+        self.validate = validate
+        self.api = api
 
     def get_optimizer( self, name='SGD', lr=0.001, momentum=0.9, decay=1e-5 ): 
         g = [], [], []  # optimizer parameter groups
@@ -63,8 +66,11 @@ class trainer :
                     if 'momentum' in x :
                         x['momentum'] = np.interp(self.ni,xi,[ self.warmup_momentum, self.optimizer_momentum ])
 
+            loss = self.loss( self.model, data, self.device )
 
             inputs, labels = data 
+
+
 
             inputs = inputs.to( self.device )
             labels = labels.to( self.device )
@@ -91,7 +97,7 @@ class trainer :
 
         return mloss
 
-    def train( self, validate=None, api=None ):
+    def train( self ):
         nepoch = self.params['trainer']['nepoch']
         batch_size = self.params['trainer']['batch_size']
         accumulate_batch_size = self.params['trainer']['accumulate_batch_size']
@@ -116,13 +122,13 @@ class trainer :
         else :
             ema = None
 
-        print( ['train_loss'] + validate.data_keys if validate else ['train_loss'] )
+        print( ['train_loss'] + self.validate.data_keys if self.validate else ['train_loss'] )
 
-        if api :
-            api.reset()
-            api.add_cfg('nepoch', nepoch)
-            api.add_cfg('keys', ['train_loss'] + validate.data_keys if validate else ['train_loss'])
-            api.send('started')
+        if self.api :
+            self.api.reset()
+            self.api.add_cfg('nepoch', nepoch)
+            self.api.add_cfg('keys', ['train_loss'] + self.validate.data_keys if self.validate else ['train_loss'])
+            self.api.send('started')
 
         self.ni = 0 
         self.nb = len(train_loader) 
@@ -147,14 +153,12 @@ class trainer :
 
             epoch_data = {'train_loss':ave_loss, 'epoch':epoch}
 
-            if validate :
-                val_data = validate( test_loader, ema.ema if ema else self.model['net'], self.device  )
+            if self.validate :
+                val_data = self.validate( test_loader, ema.ema if ema else self.model['net'], self.device  )
                 epoch_data.update( val_data )
 
             scheduler.step()
 
-            print( epoch_data )
-
-            if api :
-                api.add_item(epoch_data)
-                api.send('running' if epoch < nepoch-1 else 'done' )
+            if self.api :
+                self.api.add_item(epoch_data)
+                self.api.send('running' if epoch < nepoch-1 else 'done' )
