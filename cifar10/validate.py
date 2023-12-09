@@ -1,5 +1,6 @@
 from copy import deepcopy
 from tqdm import tqdm
+import torch
 
 class validate :
     def __init__( self ):
