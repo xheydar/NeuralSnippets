@@ -105,6 +105,7 @@ class trainer :
     def train( self, api=None ):
         nepoch = self.params['trainer']['nepoch']
         batch_size = self.params['trainer']['batch_size']
+        accumulate_batch_size = self.params['trainer']['accumulate_batch_size']
         eval_batch_size_multiplier = self.params['trainer']['eval_batch_size_multiplier']
         use_ema = self.params['trainer']['use_ema']
 
