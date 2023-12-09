@@ -80,19 +80,14 @@ class train(trainer) :
         #print( outputs.shape )
         
 def parse_commandline():
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--api', help="API Key", default=None)
     args = parser.parse_args()
     return args
     
-
 if __name__=="__main__" :
-
     args = parse_commandline()
-
     params = tools.yaml_loader('params.yaml')
-    print( params )
 
     if args.api :
         a = api('%s/api/logs/update-experiment/' % (params['api']['server']), args.api)
