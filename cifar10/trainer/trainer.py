@@ -46,15 +46,14 @@ class trainer :
         return optimizer
 
     def warmup_step( self, optimizer, ni ):
-            xi = [0, self.nw]
+        xi = [0, self.nw]
     
-            self.accumulate = max(1, np.interp(ni, xi, [1, self.nbs/self.batch_size]).round())
+        self.accumulate = max(1, np.interp(ni, xi, [1, self.nbs/self.batch_size]).round())
 
-            for j,x in enumerate( optimizer.param_groups ):
-                x['lr'] = np.interp( ni, xi, [ self.warmup_bias_lr if j == 0 else 0.0, x['initial_lr'] * self.lf(epoch_idx) ] )
-                if 'momentum' in x :
-                    x['momentum'] = np.interp(ni,xi,[ self.warmup_momentum, self.optimizer_momentum ])
-
+        for j,x in enumerate( optimizer.param_groups ):
+            x['lr'] = np.interp( ni, xi, [ self.warmup_bias_lr if j == 0 else 0.0, x['initial_lr'] * self.lf(epoch_idx) ] )
+            if 'momentum' in x :
+                x['momentum'] = np.interp(ni,xi,[ self.warmup_momentum, self.optimizer_momentum ])
 
     def train_step( self, epoch_idx, train_loader, optimizer, ema=None ):
 
