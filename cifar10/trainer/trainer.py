@@ -56,7 +56,6 @@ class trainer :
                 x['momentum'] = np.interp(ni,xi,[ self.warmup_momentum, self.optimizer_momentum ])
 
     def train_step( self, epoch_idx, train_loader, optimizer, ema=None ):
-
         self.model['net'].train()
 
         mloss = 0.0
