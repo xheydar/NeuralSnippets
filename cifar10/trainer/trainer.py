@@ -91,38 +91,7 @@ class trainer :
 
         return mloss
 
-    def eval_step( self, test_loader, ema=None ):
-
-        if ema :
-            model = ema.ema 
-        else :
-            model = self.model['net']
-
-        model.eval()
-
-        corrects = 0;
-        total = 0
-
-        for idx, data in tqdm(enumerate(test_loader), 0):
-            inputs, labels = data 
-
-            inputs = inputs.to(self.device)
-            labels = labels.to(self.device)
-
-            pred = self.model['net']( inputs )
-            pred = torch.argmax( pred, dim=1 )
-
-            pred = pred.detach().cpu().numpy()
-            labels = labels.detach().cpu().numpy()
-
-            inds = np.where( pred == labels )[0]
-
-            corrects += len(inds)
-            total += len(labels)
-
-        return corrects / total
-
-    def train( self, api=None ):
+    def train( self, validate=None, api=None ):
         nepoch = self.params['trainer']['nepoch']
         batch_size = self.params['trainer']['batch_size']
         accumulate_batch_size = self.params['trainer']['accumulate_batch_size']
@@ -147,10 +116,12 @@ class trainer :
         else :
             ema = None
 
+        print( ['train_loss'] + validate.data_keys if validate else ['train_loss'] )
+
         if api :
             api.reset()
             api.add_cfg('nepoch', nepoch)
-            api.add_cfg('keys', ['train_loss', 'test_acc'])
+            api.add_cfg('keys', ['train_loss'] + validate.data_keys if validate else ['train_loss'])
             api.send('started')
 
         self.ni = 0 
@@ -171,12 +142,19 @@ class trainer :
         for epoch in range( nepoch ):
 
             print(f'Epoch {epoch+1}/{nepoch}')
+
+            epoch_data = {}
             ave_loss = self.train_step( epoch, train_loader, optimizer, ema )
+            epoch_data['train_loss'] = ave_loss 
+
+            if validate :
+                val_data = validate( test_loader, ema.ema if ema else self.model['net'], self.device  )
+                epoch_data.update( val_data )
 
             scheduler.step()
 
-            acc = self.eval_step( test_loader, ema )
+            print( epoch_data )
 
             if api :
-                api.add_item({'train_loss': ave_loss, 'test_acc': acc, 'epoch': epoch})
+                api.add_item(epoch_data)
                 api.send('running' if epoch < nepoch-1 else 'done' )

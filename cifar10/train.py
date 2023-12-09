@@ -19,6 +19,7 @@ from trainer import trainer
 import tools
 
 from api import api
+from validate import validate
 
 cfg = edict()
 cfg.dataset = edict();
@@ -95,7 +96,8 @@ if __name__=="__main__" :
         a = None
 
     t = train( params )
+    val = validate()
     t.load_dataset()
     t.load_model()
-    t.train( api=a )
+    t.train( api=a, validate=val )
 
