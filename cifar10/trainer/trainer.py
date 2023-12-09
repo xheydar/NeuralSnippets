@@ -45,6 +45,17 @@ class trainer :
         #      f"{len(g[1])} weight(decay=0.0), {len(g[0])} weight(decay={decay}), {len(g[2])} bias")
         return optimizer
 
+    def warmup_step( self, optimizer, ni ):
+            xi = [0, self.nw]
+    
+            self.accumulate = max(1, np.interp(ni, xi, [1, self.nbs/self.batch_size]).round())
+
+            for j,x in enumerate( optimizer.param_groups ):
+                x['lr'] = np.interp( ni, xi, [ self.warmup_bias_lr if j == 0 else 0.0, x['initial_lr'] * self.lf(epoch_idx) ] )
+                if 'momentum' in x :
+                    x['momentum'] = np.interp(ni,xi,[ self.warmup_momentum, self.optimizer_momentum ])
+
+
     def train_step( self, epoch_idx, train_loader, optimizer, ema=None ):
 
         self.model['net'].train()
@@ -54,33 +65,12 @@ class trainer :
         optimizer.zero_grad()
 
         for idx, data in tqdm(enumerate( train_loader, 0 )):
-            self.ni = idx + epoch_idx * self.nb
+            ni = idx + epoch_idx * self.nb
 
-            if self.ni < self.nw : 
-                xi = [0, self.nw]
-
-                self.accumulate = max(1, np.interp(self.ni, xi, [1, self.nbs/self.batch_size]).round())
-
-                for j,x in enumerate( optimizer.param_groups ):
-                    x['lr'] = np.interp( self.ni, xi, [ self.warmup_bias_lr if j == 0 else 0.0, x['initial_lr'] * self.lf(epoch_idx) ] )
-                    if 'momentum' in x :
-                        x['momentum'] = np.interp(self.ni,xi,[ self.warmup_momentum, self.optimizer_momentum ])
-
+            if ni < self.nw :
+                self.warmup_step( optimizer, ni )
+    
             loss = self.loss( self.model, data, self.device )
-
-            inputs, labels = data 
-
-
-
-            inputs = inputs.to( self.device )
-            labels = labels.to( self.device )
-
-            #optimizer.zero_grad()
-
-            outputs = self.model['net']( inputs )
-
-            loss = self.model['loss']( outputs, labels )
-
             loss.backward()
 
             if self.ni - self.last_opt_step > self.accumulate :
