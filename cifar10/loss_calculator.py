@@ -1,6 +1,6 @@
 
 
-class loss_calculator :
+class LossCalculator :
     def __init__( self ):
         pass 
 

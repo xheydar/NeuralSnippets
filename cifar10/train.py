@@ -18,9 +18,9 @@ import model
 from trainer import trainer
 import tools
 
-from api import api as notes_api
-from validate import validate
-from loss_calculator import loss_calculator
+from notes import api as notes_api
+from validate import Validate
+from loss_calculator import LossCalculator
 
 cfg = edict()
 cfg.dataset = edict();
@@ -32,7 +32,7 @@ else :
 
 class train(trainer) :
     def __init__( self, params, api ):
-        super().__init__( params, loss_calculator(), validate(), api )
+        super().__init__( params, LossCalculator(), Validate(), api )
 
         if torch.cuda.is_available() :
             self.device = torch.device("cuda")
@@ -98,7 +98,6 @@ if __name__=="__main__" :
 
     val = validate()
     loss = loss_calculator()
-
 
     t = train( params, api=api )
     t.load_dataset()

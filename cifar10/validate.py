@@ -3,7 +3,7 @@ from tqdm import tqdm
 import torch
 import numpy as np
 
-class validate :
+class Validate :
     def __init__( self ):
         self._data_keys = ['test_acc']
 

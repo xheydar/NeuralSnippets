@@ -125,7 +125,7 @@ class trainer :
         self.accumulate = accumulate_batch_size / batch_size
         self.last_opt_step = -1
 
-        self.nw = max(round(warmup_nepoch * self.nb),100)
+        self.nw = warmup_nepoch * self.nb #max(round(warmup_nepoch * self.nb),100)
         self.warmup_bias_lr = warmup_bias_lr 
         self.warmup_momentum = warmup_momentum
         self.optimizer_momentum = optimizer_momentum
