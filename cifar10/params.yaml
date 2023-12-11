@@ -10,6 +10,7 @@ trainer:
     decay: 1e-5
   nepoch: 100
   use_ema: true
+  use_amp: true
   batch_size: 64
   accumulate_batch_size: 256
   eval_batch_size_multiplier: 2

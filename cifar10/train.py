@@ -96,9 +96,6 @@ if __name__=="__main__" :
     else :
         api = None
 
-    val = validate()
-    loss = loss_calculator()
-
     t = train( params, api=api )
     t.load_dataset()
     t.load_model()
