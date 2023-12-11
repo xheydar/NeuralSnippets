@@ -55,7 +55,7 @@ class trainer :
             if 'momentum' in x :
                 x['momentum'] = np.interp(ni,xi,[ self.warmup_momentum, self.optimizer_momentum ])
 
-    def train_step( self, epoch_idx, train_loader, optimizer, scaler, ema=None, use_amp=False ):
+    def train_step( self, epoch_idx, train_loader, optimizer, ema=None ):
         self.model['net'].train()
 
         mloss = 0.0
@@ -68,16 +68,13 @@ class trainer :
             if ni < self.nw :
                 self.warmup_step( optimizer, ni, epoch_idx )
     
-            loss = self.loss( self.model, data, self.device, use_amp=use_amp )
-            scaler.scale(loss).backward()
+            loss = self.loss( self.model, data, self.device )
+            loss.backward()
 
             if ni - self.last_opt_step > self.accumulate :
-                scaler.unscale_(optimizer) 
                 torch.nn.utils.clip_grad_norm_( self.model['net'].parameters(), max_norm=10.0 )
 
-                scaler.step(optimizer)  # optimizer.step
-                scaler.update()
-
+                optimizer.step()
                 optimizer.zero_grad()
 
                 if ema :
@@ -95,7 +92,6 @@ class trainer :
         accumulate_batch_size = self.params['trainer']['accumulate_batch_size']
         eval_batch_size_multiplier = self.params['trainer']['eval_batch_size_multiplier']
         use_ema = self.params['trainer']['use_ema']
-        use_amp = self.params['trainer']['use_amp']
         lrf = self.params['trainer']['lrf']
 
         # Warmup 
@@ -139,13 +135,11 @@ class trainer :
         self.lf = lambda x: (1 - x / nepoch) * (1.0 - lrf) + lrf  # linear
         scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=self.lf) 
 
-        scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
-
         for epoch in range( nepoch ):
 
             print(f'Epoch {epoch+1}/{nepoch}')
 
-            ave_loss = self.train_step( epoch, train_loader, optimizer, scaler, ema, use_amp=use_amp )
+            ave_loss = self.train_step( epoch, train_loader, optimizer, ema )
 
             epoch_data = {'train_loss':ave_loss, 'epoch':epoch}
 

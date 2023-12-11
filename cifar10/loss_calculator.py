@@ -10,9 +10,8 @@ class LossCalculator :
         inputs = inputs.to(device)
         labels = labels.to(device)
 
-        with torch.autocast(device_type=device, dtype=torch.float16, enabled=use_amp ) :
-            outputs = model['net']( inputs )
-            loss = model['loss']( outputs, labels )
+        outputs = model['net']( inputs )
+        loss = model['loss']( outputs, labels )
 
         return loss
 
