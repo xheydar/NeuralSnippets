@@ -1,6 +1,10 @@
-
 api:
   server: 'http://192.168.0.2:8080' 
+
+dataset: 
+  root:
+    Darwin: '/Users/heydar/Work/void/cache'
+    Linux: '/home/heydar/cache' 
 
 trainer:
   optimizer :

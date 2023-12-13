@@ -12,7 +12,6 @@ def send_background( uri, data ):
 
 class api :
     def __init__( self, uri, key ):
-
         self.uri = uri 
         self.key = key  
 
@@ -30,9 +29,7 @@ class api :
         item['timestamp'] = datetime.datetime.now().strftime('%Y%m%d%H%M%S.%f')
         self.items.append( item )
         
-
     def send( self, status ):
-
         payload = {}
         payload['items'] = self.items 
         payload['cfg'] = self.cfg

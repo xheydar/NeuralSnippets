@@ -22,17 +22,9 @@ from notes import api as notes_api
 from validate import Validate
 from loss_calculator import LossCalculator
 
-cfg = edict()
-cfg.dataset = edict();
-
-if platform.system() == "Darwin":
-    cfg.dataset.root = '/Users/heydar/Work/void/cache'
-else :
-    cfg.dataset.root = '/home/heydar/cache'
-
 class train(trainer) :
-    def __init__( self, params, api ):
-        super().__init__( params, LossCalculator(), Validate(), api )
+    def __init__( self, cfg_name, api_key=None ):
+        super().__init__( cfg_name, api_key=api_key )
 
         if torch.cuda.is_available() :
             self.device = torch.device("cuda")
@@ -49,13 +41,16 @@ class train(trainer) :
                         ])
 
         self.datasets = {}
-        self.datasets['train'] = dataset( cfg.dataset, transform, train=True )
-        self.datasets['test'] = dataset( cfg.dataset, transform, train=False )
+        self.datasets['train'] = dataset( self.params.dataset, transform, train=True )
+        self.datasets['test'] = dataset( self.params.dataset, transform, train=False )
 
     def load_model( self ):
         self.model = {}
         self.model['net'] = model.Net().to( self.device )
         self.model['loss'] = model.Loss().to( self.device )
+
+        self.validate = Validate()
+        self.compute_loss = LossCalculator()
 
     def do_stuff( self ):
 
@@ -89,14 +84,8 @@ def parse_commandline():
     
 if __name__=="__main__" :
     args = parse_commandline()
-    params = tools.yaml_loader('params.yaml')
 
-    if args.api :
-        api = notes_api('%s/api/logs/update-experiment/' % (params['api']['server']), args.api)
-    else :
-        api = None
-
-    t = train( params, api=api )
+    t = train( 'params.yaml', api_key=args.api )
     t.load_dataset()
     t.load_model()
     t.train()

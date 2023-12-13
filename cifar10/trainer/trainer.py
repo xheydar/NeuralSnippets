@@ -7,13 +7,29 @@ from copy import deepcopy
 from torch.optim import lr_scheduler
 
 from .ema import ModelEMA
+from config import Params
+from notes import api
 
 class trainer :
-    def __init__( self, params, loss, validate=None, api=None ):
-        self.params = params
-        self.loss = loss
-        self.validate = validate
-        self.api = api
+    def load_config( self ):
+        self.params = Params( self._cfg_name )
+
+        if self.params.api and self._api_key :
+            self.api = api( '%s/api/logs/update-experiment/' % self.params.api['server'], 
+                           self._api_key )
+        else :
+            self.api = None
+
+    def __init__( self, cfg_name, api_key=None ):
+        self._api_key = api_key
+        self._cfg_name = cfg_name 
+
+        self.load_config()
+
+        #self.params = params
+        #self.loss = loss
+        #self.validate = validate
+        #self.api = api
 
     def get_optimizer( self, name='SGD', lr=0.001, momentum=0.9, decay=1e-5 ): 
         g = [], [], []  # optimizer parameter groups
@@ -68,7 +84,7 @@ class trainer :
             if ni < self.nw :
                 self.warmup_step( optimizer, ni, epoch_idx )
     
-            loss = self.loss( self.model, data, self.device )
+            loss = self.compute_loss( self.model, data, self.device )
             loss.backward()
 
             if ni - self.last_opt_step > self.accumulate :
@@ -87,25 +103,24 @@ class trainer :
         return mloss
 
     def train( self ):
-        nepoch = self.params['trainer']['nepoch']
-        batch_size = self.params['trainer']['batch_size']
-        accumulate_batch_size = self.params['trainer']['accumulate_batch_size']
-        eval_batch_size_multiplier = self.params['trainer']['eval_batch_size_multiplier']
-        use_ema = self.params['trainer']['use_ema']
-        lrf = self.params['trainer']['lrf']
+        nepoch = self.params.trainer['nepoch']
+        batch_size = self.params.trainer['batch_size']
+        accumulate_batch_size = self.params.trainer['accumulate_batch_size']
+        eval_batch_size_multiplier = self.params.trainer['eval_batch_size_multiplier']
+        use_ema = self.params.trainer['use_ema']
+        lrf = self.params.trainer['lrf']
 
         # Warmup 
-        warmup_nepoch = self.params['trainer']['warmup_nepoch']
-        warmup_bias_lr = self.params['trainer']['warmup_bias_lr']
-        warmup_momentum = self.params['trainer']['warmup_momentum']
+        warmup_nepoch = self.params.trainer['warmup_nepoch']
+        warmup_bias_lr = self.params.trainer['warmup_bias_lr']
+        warmup_momentum = self.params.trainer['warmup_momentum']
 
-        optimizer_momentum = self.params['trainer']['optimizer']['momentum']
+        optimizer_momentum = self.params.trainer['optimizer']['momentum']
 
         train_loader = self.datasets['train'].get_loader( batch_size, True )
         test_loader = self.datasets['test'].get_loader( batch_size * eval_batch_size_multiplier , False )
 
-        optimizer = self.get_optimizer( **self.params['trainer']['optimizer'] )
-
+        optimizer = self.get_optimizer( **self.params.trainer['optimizer'] )
 
         if use_ema :
             ema = ModelEMA( self.model['net'] )
@@ -134,6 +149,10 @@ class trainer :
 
         self.lf = lambda x: (1 - x / nepoch) * (1.0 - lrf) + lrf  # linear
         scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=self.lf) 
+
+        assert hasattr(self,'compute_loss'), "compute_loss was not provided."
+        if not hasattr(self,'validate'):
+            self.validate = None
 
         for epoch in range( nepoch ):
 
