@@ -71,7 +71,7 @@ class trainer :
             if 'momentum' in x :
                 x['momentum'] = np.interp(ni,xi,[ self.warmup_momentum, self.optimizer_momentum ])
 
-    def train_step( self, epoch_idx, train_loader, optimizer, ema=None ):
+    def train_step( self, epoch_idx, train_loader, optimizer, ema=None, use_amp=False ):
         self.model['net'].train()
 
         mloss = 0.0
@@ -84,7 +84,7 @@ class trainer :
             if ni < self.nw :
                 self.warmup_step( optimizer, ni, epoch_idx )
     
-            loss = self.compute_loss( self.model, data, self.device )
+            loss = self.compute_loss( self.model, data, self.device, use_amp=use_amp )
             loss.backward()
 
             if ni - self.last_opt_step > self.accumulate :
@@ -108,6 +108,7 @@ class trainer :
         accumulate_batch_size = self.params.trainer['accumulate_batch_size']
         eval_batch_size_multiplier = self.params.trainer['eval_batch_size_multiplier']
         use_ema = self.params.trainer['use_ema']
+        use_amp = self.params.trainer['use_amp']
         lrf = self.params.trainer['lrf']
 
         # Warmup 
@@ -158,7 +159,7 @@ class trainer :
 
             print(f'Epoch {epoch+1}/{nepoch}')
 
-            ave_loss = self.train_step( epoch, train_loader, optimizer, ema )
+            ave_loss = self.train_step( epoch, train_loader, optimizer, ema, use_amp=use_amp )
 
             epoch_data = {'train_loss':ave_loss, 'epoch':epoch}
 
