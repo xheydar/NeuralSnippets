@@ -1,6 +1,7 @@
 import os
 import torch 
 import torch.nn as nn 
+import time
 
 import argparse
 import pickle
@@ -107,6 +108,8 @@ class Module :
                                 shuffle=False
                                 )
 
+        t0 = time.time()
+
         epochs = 100 
         for epoch in range(epochs):
             sampler.set_epoch(epoch)
@@ -131,8 +134,9 @@ class Module :
                 if self.local_rank == 0:
                     pbar.set_postfix({'loss': f"{l.item():.4f}"})
 
-        pass
+        t1 = time.time()
 
+        print(f"Elapsed time : {t1-t0}")
         
 
 
