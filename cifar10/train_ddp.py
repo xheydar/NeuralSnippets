@@ -114,7 +114,7 @@ class Module :
 
         optimizer = optim.Adam( model.parameters(), lr=1e-4)
         dataloader = DataLoader(self.datasets['train'],
-                                batch_size=512, 
+                                batch_size=1024, 
                                 sampler=sampler, 
                                 shuffle=not self.resource.is_distributed
                                 )
