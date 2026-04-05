@@ -33,55 +33,65 @@ def load_config( cfg_path ):
     
     return munchify(cfg)
 
-class DDPManager :
-    def __init__( self ):
-        self.world_size = int(os.environ.get("WORLD_SIZE",0))
-        self.local_rank = int(os.environ.get("LOCAL_RANK",-1))
+class ResourceMananger :
+    def _select_device( self, device=None ):
+        if isinstance(device, torch.device): 
+            return device
 
-        if self.local_rank != -1 :
+        if device is not None :
+            return torch.device(device)
+
+        if torch.cuda.is_available() and device is None :
+            return torch.device("cuda")
+        elif torch.backends.mps.is_available() and device is None :
+            return torch.device("mps")
+        return torch.device("cpu")
+    def __init__( self, device=None ):
+
+
+        if self.is_distributed :
+            self.world_size = int(os.environ.get("WORLD_SIZE",0))
+            self.local_rank = int(os.environ.get("LOCAL_RANK",-1))
             dist.init_process_group(backend="nccl")
             torch.cuda.set_device(self.local_rank)
             self._device = self.local_rank
+        else :
+            self._device = self._select_device( device )
 
     def cleanup( self ):
-        if self.local_rank != -1 and dist.is_initialized():
+        if self.is_distributed and dist.is_initialized() :
             dist.destroy_process_group()
+
+    @property 
+    def is_distributed( self ):
+        return "WORLD_SIZE" in os.environ
 
     @property 
     def device( self ):
         return self._device
 
-
-
+    @property
+    def is_master( self ):
+        if not self.is_distributed :
+            return True 
+        return self.local_rank == 0 
 
 
 class Module :
     def __init__( self ):
-        self.world_size = int(os.environ.get("WORLD_SIZE",0))
-        self.local_rank = int(os.environ.get("LOCAL_RANK",-1))
-
-        dist.init_process_group(backend="nccl")
-        torch.cuda.set_device(self.local_rank)
-        self.device = self.local_rank
-
-        print( self.world_size, self.local_rank )
-
+        self.resource = ResourceMananger()
         self.config = load_config('params.yaml')
 
     def cleanup(self):
-        if dist.is_initialized():
-            dist.destroy_process_group()
+        self.resource.cleanup() 
 
     def load_model( self ):
         self.model = {}
-        self.model['net'] = model.Net().to( self.device )
-        self.model['loss'] = model.Loss().to( self.device )
+        self.model['net'] = model.Net().to( self.resource.device )
+        self.model['loss'] = model.Loss().to( self.resource.device )
 
-
-        self.model['net'] = self.model['net'].to( self.device )
-        self.model['loss'] = self.model['loss'].to( self.device )
-
-        self.model['net'] = DDP(self.model['net'], device_ids=[self.device])
+        if self.resource.is_distributed :
+            self.model['net'] = DDP(self.model['net'], device_ids=[self.resource.device])
 
     def load_dataset( self ):
         transform = transforms.Compose(
@@ -93,11 +103,12 @@ class Module :
         self.datasets['train'] = dataset( self.config.dataset, transform, train=True )
         self.datasets['test'] = dataset( self.config.dataset, transform, train=False )
 
-        self.datasets['sampler'] = DistributedSampler( self.datasets['train'] )
+        if self.resource.is_distributed :
+            self.datasets['sampler'] = DistributedSampler( self.datasets['train'] )
 
     def train( self ):
 
-        sampler = self.datasets['sampler']
+        sampler = self.datasets.get('sampler',None)
         model = self.model['net']
         loss = self.model['loss']
 
@@ -105,24 +116,26 @@ class Module :
         dataloader = DataLoader(self.datasets['train'],
                                 batch_size=512, 
                                 sampler=sampler, 
-                                shuffle=False
+                                shuffle=not self.resource.is_distributed
                                 )
 
         t0 = time.time()
 
         epochs = 100 
         for epoch in range(epochs):
-            sampler.set_epoch(epoch)
+
+            if sampler is not None :
+                sampler.set_epoch(epoch)
 
             pbar = tqdm(dataloader, 
                     desc=f"Epoch {epoch+1}/{epochs}", 
-                    disable=(self.local_rank != 0))
+                    disable=not self.resource.is_master
+            )
 
-
-        
+ 
             for inputs, labels in pbar:
-                inputs = inputs.to(self.device)
-                labels = labels.to(self.device)
+                inputs = inputs.to(self.resource.device)
+                labels = labels.to(self.resource.device)
             
                 optimizer.zero_grad()
                 outputs = model(inputs)
@@ -131,7 +144,7 @@ class Module :
                 l.backward() 
                 optimizer.step()
 
-                if self.local_rank == 0:
+                if self.resource.is_master:
                     pbar.set_postfix({'loss': f"{l.item():.4f}"})
 
         t1 = time.time()
