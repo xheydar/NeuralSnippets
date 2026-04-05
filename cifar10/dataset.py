@@ -7,7 +7,9 @@ import torchvision.transforms as transforms
 class dataset :
     def __init__( self, cfg, transform, train=True ):
 
-        root = cfg['root'][platform.system()]
+
+
+        root = cfg.root[platform.system()]
 
         dataset = torchvision.datasets.CIFAR10( root=root, train=train, 
                                                 download=True, transform=transform )
